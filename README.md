@@ -13,6 +13,28 @@ away — with page content only ever sent after your consent.
 
 ---
 
+## Download & install
+
+**Windows 10/11 (64-bit).** Grab the latest build from the
+[**Releases** page](../../releases):
+
+- **`Intelleson Browser-Setup-<version>.exe`** — installer. Double-click to
+  install (adds Start-menu / desktop shortcuts).
+- **`Intelleson Browser-Setup-<version>.zip`** — portable. Unzip and run
+  `Intelleson Browser.exe`; no install.
+
+> **SmartScreen note:** the app isn't code-signed yet, so Windows may show
+> *"Windows protected your PC."* Click **More info → Run anyway**. This is normal
+> for unsigned apps and disappears once a code-signing certificate is added.
+
+**Desktop only.** Intelleson is a desktop application (Windows, and buildable for
+macOS/Linux). There is **no mobile app** — your synced bookmarks/notes live in
+your own Supabase, so a future mobile client could read them, but the browser
+itself doesn't run on phones. Prefer to build from source? See
+[Development](docs/development-guide.md).
+
+---
+
 ## Features
 
 **Browser**
