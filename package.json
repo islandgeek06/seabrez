@@ -60,6 +60,11 @@
       "output": "release",
       "buildResources": "assets"
     },
+    "publish": [
+      {
+        "provider": "github"
+      }
+    ],
     "files": [
       "dist/**/*",
       "dist-electron/**/*"
@@ -67,6 +72,7 @@
     "win": {
       "target": "nsis",
       "icon": "assets/icon.ico",
+      "signAndEditExecutable": false,
       "artifactName": "${productName}-Setup-${version}.${ext}"
     },
     "nsis": {
