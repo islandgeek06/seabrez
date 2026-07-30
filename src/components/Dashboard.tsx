@@ -80,7 +80,7 @@ export function Dashboard() {
 
       <div className="dash-grid">
         <section className="card glass">
-          <h3><Sparkles size={14} /> Ask Intelleson</h3>
+          <h3><Sparkles size={14} /> Ask SeaBrez</h3>
           <AskBox onAsk={(t) => void ask(t)} />
         </section>
 

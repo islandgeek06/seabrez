@@ -28,7 +28,7 @@ export function Sidebar() {
 
   return (
     <nav className="sidebar" aria-label="Primary">
-      <button className="sidebar-logo" title="Intelleson" onClick={() => setSurface('newtab')}>
+      <button className="sidebar-logo" title="SeaBrez" onClick={() => setSurface('newtab')}>
         ◈
       </button>
 

@@ -1,6 +1,6 @@
 # Architecture
 
-Intelleson Browser is an Electron desktop app with a strict process separation.
+SeaBrez is an Electron desktop app with a strict process separation.
 
 ```
 ┌──────────────────────────────────────────────────────────────┐

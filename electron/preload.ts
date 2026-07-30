@@ -125,4 +125,4 @@ const api = {
 
 contextBridge.exposeInMainWorld('intelleson', api)
 
-export type IntellesonApi = typeof api
+export type SeaBrezApi = typeof api

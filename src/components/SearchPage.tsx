@@ -11,7 +11,7 @@ function hostOf(url: string): string {
   }
 }
 
-// Intelleson's own results page: a streamed AI answer plus web links — instead
+// SeaBrez's own results page: a streamed AI answer plus web links — instead
 // of navigating to an external engine's page.
 export function SearchPage() {
   const query = useStore((s) => s.searchQuery)

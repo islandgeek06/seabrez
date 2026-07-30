@@ -15,7 +15,7 @@ export function WebEmpty() {
           <p>No open tabs. Open one to start browsing with real Chromium.</p>
         ) : (
           <p>
-            This is the <strong>web preview</strong> of Intelleson's interface. Live page
+            This is the <strong>web preview</strong> of SeaBrez's interface. Live page
             rendering, SQLite storage, and AI run in the desktop app
             (<code>npm run dev:electron</code>). Every panel here is interactive.
           </p>

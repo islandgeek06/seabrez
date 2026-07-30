@@ -184,7 +184,7 @@ export function Settings() {
       <section className="card glass">
         <h3>Web search</h3>
         <p className="muted small">
-          Searches show an AI answer plus web links inside Intelleson — you never land on Google.
+          Searches show an AI answer plus web links inside SeaBrez — you never land on Google.
         </p>
         <Row label="Web results source">
           <select
@@ -339,7 +339,7 @@ export function Settings() {
         <Row label="Hardware acceleration (restart to apply)">
           <input type="checkbox" checked={settings.hardwareAcceleration} onChange={(e) => upd('hardwareAcceleration', e.target.checked)} />
         </Row>
-        <p className="muted small">Intelleson Browser v{version || '0.1.0'} · Chromium via Electron</p>
+        <p className="muted small">SeaBrez v{version || '0.1.0'} · Chromium via Electron</p>
       </section>
     </div>
   )

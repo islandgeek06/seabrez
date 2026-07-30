@@ -108,7 +108,7 @@ export function AssistantPanel() {
               send(e)
             }
           }}
-          placeholder="Message Intelleson…"
+          placeholder="Message SeaBrez…"
           rows={2}
           aria-label="Message the assistant"
         />

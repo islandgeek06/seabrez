@@ -69,7 +69,7 @@ export default function App() {
     return (
       <div className="boot">
         <div className="boot-logo">◈</div>
-        <p>Starting Intelleson…</p>
+        <p>Starting SeaBrez…</p>
       </div>
     )
   }
@@ -79,7 +79,7 @@ export default function App() {
       {!isElectron && (
         <div className="preview-banner">
           ⚠️ Browser preview only — no live pages, storage, or AI here. Use the{' '}
-          <strong>Intelleson desktop app window</strong> (run <code>npm run dev:electron</code>),
+          <strong>SeaBrez desktop app window</strong> (run <code>npm run dev:electron</code>),
           not this <code>localhost:5273</code> tab.
         </div>
       )}

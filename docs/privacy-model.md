@@ -1,6 +1,6 @@
 # Privacy Model
 
-Intelleson is **local-first**: your data lives on your device in a local SQLite
+SeaBrez is **local-first**: your data lives on your device in a local SQLite
 file. There is no account, no telemetry, and no cloud sync in this release.
 
 ## What is stored locally
@@ -41,7 +41,7 @@ default and only granted per-origin with your explicit consent.
 
 Page content is only sent to your chosen AI provider **after you consent** (per
 the page-context consent setting). Requests go directly from your machine to the
-provider using your own key. Intelleson does not proxy or retain them.
+provider using your own key. SeaBrez does not proxy or retain them.
 
 ## Your controls
 

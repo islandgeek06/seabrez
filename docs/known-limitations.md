@@ -9,7 +9,7 @@ replacement. Known gaps and honest caveats:
   `npm run build`, `npm test`).
 - ✅ **The web-only UI preview** (`npm run dev`) renders and is interactive.
 - ✅ **The app packages to a runnable Windows bundle** (`release/win-unpacked/
-  Intelleson Browser.exe`, ~181 MB) containing `main.js`, the CommonJS
+  SeaBrez.exe`, ~181 MB) containing `main.js`, the CommonJS
   `preload.cjs`, and the SQLite WASM binary.
 - ⚠️ **The NSIS `.exe` installer** requires Windows **Developer Mode** or an
   elevated terminal (electron-builder's `winCodeSign` extraction creates

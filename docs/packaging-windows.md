@@ -1,6 +1,6 @@
 # Packaging (Windows)
 
-Intelleson uses `electron-builder`. Config lives in the `build` key of
+SeaBrez uses `electron-builder`. Config lives in the `build` key of
 `package.json`.
 
 ## Build an installer
@@ -13,7 +13,7 @@ This runs `npm run build` then `electron-builder --win nsis`, producing an
 installer under `release/`.
 
 Output:
-- **NSIS installer** (`Intelleson Browser Setup <version>.exe`) — not one-click,
+- **NSIS installer** (`SeaBrez Setup <version>.exe`) — not one-click,
   lets the user choose the install directory, creates Start Menu and Desktop
   shortcuts, and registers an uninstaller.
 
@@ -23,7 +23,7 @@ Output:
 npx electron-builder --win --dir
 ```
 
-This writes a fully runnable app to `release/win-unpacked/` (`Intelleson
+This writes a fully runnable app to `release/win-unpacked/` (`SeaBrez
 Browser.exe`) without building the installer — useful for quick testing.
 
 ## Developer Mode requirement for the installer

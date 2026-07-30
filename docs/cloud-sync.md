@@ -1,8 +1,8 @@
 # Cloud Sync (Supabase)
 
-Intelleson syncs your **bookmarks and notes** across devices using **your own**
+SeaBrez syncs your **bookmarks and notes** across devices using **your own**
 free Supabase project. Your data lives in your Supabase account, isolated per
-user by Row-Level Security. Intelleson never sees or stores your data on any
+user by Row-Level Security. SeaBrez never sees or stores your data on any
 server we run — it's local-first with your Supabase as the sync hub.
 
 > Scope: bookmarks + notes today. History, tabs, and settings sync are planned
@@ -58,7 +58,7 @@ create policy "own notes" on public.notes
   - **Project API keys → `anon` `public`** key (a long `eyJ…` string — this one is
     safe to use in a client app; **do not** use the `service_role` key).
 
-### 4. Connect Intelleson
+### 4. Connect SeaBrez
 - In the app: **Settings → Account & Sync**.
 - Paste the **Project URL** and **anon public key**.
 - Click **Create account** (enter an email + password). By default Supabase sends
@@ -67,7 +67,7 @@ create policy "own notes" on public.notes
     **Authentication → Providers → Email** and turn off "Confirm email".
 
 ### 5. Sync
-- After signing in, Intelleson syncs automatically, and on every launch. You can
+- After signing in, SeaBrez syncs automatically, and on every launch. You can
   also click **Sync now** anytime.
 - Repeat steps 4–5 on your other device (same Supabase URL + key + account) and
   your bookmarks and notes come with you.
