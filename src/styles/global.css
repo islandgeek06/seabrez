@@ -1095,6 +1095,11 @@ kbd {
 .app-shell[data-sidebar='true'] .main-column {
   margin-left: 56px;
 }
+/* Reserve space on the right for the assistant panel so the native web view
+   shrinks and the panel sits beside the page instead of behind it. */
+.app-shell[data-assistant='true'] .main-column {
+  margin-right: 404px;
+}
 .chrome {
   height: auto;
   padding: 6px 12px 8px;

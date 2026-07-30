@@ -76,7 +76,12 @@ export default function App() {
   }
 
   return (
-    <div className="app-shell" data-sidebar={settings.showSidebar} data-private={isPrivate}>
+    <div
+      className="app-shell"
+      data-sidebar={settings.showSidebar}
+      data-private={isPrivate}
+      data-assistant={assistantOpen}
+    >
       {!isElectron && (
         <div className="preview-banner">
           ⚠️ Browser preview only — no live pages, storage, or AI here. Use the{' '}

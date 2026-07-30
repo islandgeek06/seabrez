@@ -34,6 +34,28 @@ describe('resolveOmniboxInput', () => {
   it('handles empty input', () => {
     expect(resolveOmniboxInput('   ', 'google')).toBe('about:blank')
   })
+  it('turns Windows file paths (even with spaces) into file:// URLs', () => {
+    expect(resolveOmniboxInput('C:\\Users\\Island Boss\\index.html', 'google')).toBe(
+      'file:///C:/Users/Island%20Boss/index.html',
+    )
+    expect(resolveOmniboxInput('C:/Users/x/site/index.html', 'google')).toBe(
+      'file:///C:/Users/x/site/index.html',
+    )
+  })
+  it('passes file:// URLs through (encoded)', () => {
+    expect(resolveOmniboxInput('file:///C:/a b/index.html', 'google')).toBe(
+      'file:///C:/a%20b/index.html',
+    )
+  })
+})
+
+describe('isProbablyUrl — local paths', () => {
+  it('treats file paths as navigable, not searches', () => {
+    expect(isProbablyUrl('C:\\Users\\Island Boss\\index.html')).toBe(true)
+    expect(isProbablyUrl('C:/Users/x/index.html')).toBe(true)
+    expect(isProbablyUrl('file:///C:/x/index.html')).toBe(true)
+    expect(isProbablyUrl('/home/user/page.html')).toBe(true)
+  })
 })
 
 describe('safeOrigin', () => {

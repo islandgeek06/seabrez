@@ -457,9 +457,13 @@ export const useStore = create<State>((set, get) => ({
 
   setPalette(open) {
     set({ paletteOpen: open })
+    // The native web view renders above renderer HTML, so hide it while a
+    // full-screen overlay is open, then restore based on the current surface.
+    api.view.setWebVisible(!open && get().surface === 'web' && !get().comparePickerOpen)
   },
   setComparePicker(open) {
     set({ comparePickerOpen: open })
+    api.view.setWebVisible(!open && get().surface === 'web' && !get().paletteOpen)
   },
   toggleAssistant() {
     set((s) => ({ assistantOpen: !s.assistantOpen }))
