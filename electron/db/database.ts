@@ -167,8 +167,14 @@ export const bookmarks = {
       folders: db
         .prepare('SELECT * FROM bookmarkFolders ORDER BY position, name')
         .all() as BookmarkFolder[],
-      items: db.prepare('SELECT * FROM bookmarks ORDER BY position, createdAt').all() as Bookmark[],
+      items: db
+        .prepare('SELECT * FROM bookmarks WHERE deleted = 0 ORDER BY position, createdAt')
+        .all() as Bookmark[],
     }
+  },
+  /** All rows incl. tombstones (deleted=1) — used by cloud sync to push deletes. */
+  listAllForSync(): Bookmark[] {
+    return db.prepare('SELECT * FROM bookmarks').all() as Bookmark[]
   },
   create(input: {
     title: string
@@ -189,10 +195,11 @@ export const bookmarks = {
       position: 0,
       createdAt: ts,
       updatedAt: ts,
+      deleted: 0,
     }
     db.prepare(
-      `INSERT INTO bookmarks (id, folderId, workspaceId, title, url, favicon, pinned, position, createdAt, updatedAt)
-       VALUES (@id, @folderId, @workspaceId, @title, @url, @favicon, @pinned, @position, @createdAt, @updatedAt)`,
+      `INSERT INTO bookmarks (id, folderId, workspaceId, title, url, favicon, pinned, position, createdAt, updatedAt, deleted)
+       VALUES (@id, @folderId, @workspaceId, @title, @url, @favicon, @pinned, @position, @createdAt, @updatedAt, @deleted)`,
     ).run(b)
     return b
   },
@@ -205,7 +212,8 @@ export const bookmarks = {
     ).run(merged)
   },
   remove(id: string) {
-    db.prepare('DELETE FROM bookmarks WHERE id = ?').run(id)
+    // Soft delete (tombstone) so the deletion syncs to other devices.
+    db.prepare('UPDATE bookmarks SET deleted = 1, updatedAt = ? WHERE id = ?').run(now(), id)
   },
   createFolder(name: string, parentId: string | null = null): BookmarkFolder {
     const ts = now()
@@ -221,18 +229,21 @@ export const bookmarks = {
     db.prepare('DELETE FROM bookmarkFolders WHERE id = ?').run(id)
   },
   isBookmarked(url: string): boolean {
-    return Boolean(db.prepare('SELECT 1 FROM bookmarks WHERE url = ? LIMIT 1').get(url))
+    return Boolean(
+      db.prepare('SELECT 1 FROM bookmarks WHERE url = ? AND deleted = 0 LIMIT 1').get(url),
+    )
   },
   // Insert-or-update a full row (from cloud sync), keeping whichever copy has the
-  // newer updatedAt (last-write-wins).
+  // newer updatedAt (last-write-wins). The `deleted` flag rides along, so a
+  // remote tombstone deletes the local row and vice-versa.
   upsert(b: Bookmark) {
     db.prepare(
-      `INSERT INTO bookmarks (id, folderId, workspaceId, title, url, favicon, pinned, position, createdAt, updatedAt)
-       VALUES (@id, @folderId, @workspaceId, @title, @url, @favicon, @pinned, @position, @createdAt, @updatedAt)
+      `INSERT INTO bookmarks (id, folderId, workspaceId, title, url, favicon, pinned, position, createdAt, updatedAt, deleted)
+       VALUES (@id, @folderId, @workspaceId, @title, @url, @favicon, @pinned, @position, @createdAt, @updatedAt, @deleted)
        ON CONFLICT(id) DO UPDATE SET
          folderId=excluded.folderId, workspaceId=excluded.workspaceId, title=excluded.title,
          url=excluded.url, favicon=excluded.favicon, pinned=excluded.pinned, position=excluded.position,
-         updatedAt=excluded.updatedAt
+         updatedAt=excluded.updatedAt, deleted=excluded.deleted
        WHERE excluded.updatedAt > bookmarks.updatedAt`,
     ).run(b)
   },
@@ -246,10 +257,16 @@ export const notes = {
     if (query) {
       const like = `%${query}%`
       return db
-        .prepare('SELECT * FROM notes WHERE title LIKE ? OR content LIKE ? ORDER BY updatedAt DESC')
+        .prepare(
+          'SELECT * FROM notes WHERE deleted = 0 AND (title LIKE ? OR content LIKE ?) ORDER BY updatedAt DESC',
+        )
         .all(like, like) as Note[]
     }
-    return db.prepare('SELECT * FROM notes ORDER BY updatedAt DESC').all() as Note[]
+    return db.prepare('SELECT * FROM notes WHERE deleted = 0 ORDER BY updatedAt DESC').all() as Note[]
+  },
+  /** All rows incl. tombstones (deleted=1) — used by cloud sync to push deletes. */
+  listAllForSync(): Note[] {
+    return db.prepare('SELECT * FROM notes').all() as Note[]
   },
   create(input: Partial<Note>): Note {
     const ts = now()
@@ -261,10 +278,11 @@ export const notes = {
       sourceUrl: input.sourceUrl ?? null,
       createdAt: ts,
       updatedAt: ts,
+      deleted: 0,
     }
     db.prepare(
-      `INSERT INTO notes (id, workspaceId, title, content, sourceUrl, createdAt, updatedAt)
-       VALUES (@id, @workspaceId, @title, @content, @sourceUrl, @createdAt, @updatedAt)`,
+      `INSERT INTO notes (id, workspaceId, title, content, sourceUrl, createdAt, updatedAt, deleted)
+       VALUES (@id, @workspaceId, @title, @content, @sourceUrl, @createdAt, @updatedAt, @deleted)`,
     ).run(n)
     return n
   },
@@ -277,16 +295,17 @@ export const notes = {
     ).run(merged)
   },
   remove(id: string) {
-    db.prepare('DELETE FROM notes WHERE id = ?').run(id)
+    // Soft delete (tombstone) so the deletion syncs to other devices.
+    db.prepare('UPDATE notes SET deleted = 1, updatedAt = ? WHERE id = ?').run(now(), id)
   },
   // Insert-or-update a full row (from cloud sync), last-write-wins on updatedAt.
   upsert(n: Note) {
     db.prepare(
-      `INSERT INTO notes (id, workspaceId, title, content, sourceUrl, createdAt, updatedAt)
-       VALUES (@id, @workspaceId, @title, @content, @sourceUrl, @createdAt, @updatedAt)
+      `INSERT INTO notes (id, workspaceId, title, content, sourceUrl, createdAt, updatedAt, deleted)
+       VALUES (@id, @workspaceId, @title, @content, @sourceUrl, @createdAt, @updatedAt, @deleted)
        ON CONFLICT(id) DO UPDATE SET
          workspaceId=excluded.workspaceId, title=excluded.title, content=excluded.content,
-         sourceUrl=excluded.sourceUrl, updatedAt=excluded.updatedAt
+         sourceUrl=excluded.sourceUrl, updatedAt=excluded.updatedAt, deleted=excluded.deleted
        WHERE excluded.updatedAt > notes.updatedAt`,
     ).run(n)
   },

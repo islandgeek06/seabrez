@@ -137,4 +137,12 @@ export const MIGRATIONS: Migration[] = [
       CREATE INDEX idx_downloads_started ON downloads(startedAt DESC);
     `,
   },
+  {
+    version: 2,
+    name: 'soft-delete-tombstones',
+    sql: /* sql */ `
+      ALTER TABLE bookmarks ADD COLUMN deleted INTEGER NOT NULL DEFAULT 0;
+      ALTER TABLE notes ADD COLUMN deleted INTEGER NOT NULL DEFAULT 0;
+    `,
+  },
 ]

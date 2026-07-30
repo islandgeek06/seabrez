@@ -61,6 +61,7 @@ function bmToRemote(b: Bookmark, userId: string) {
     position: b.position,
     created_at: b.createdAt,
     updated_at: b.updatedAt,
+    deleted: b.deleted,
   }
 }
 function bmToLocal(r: Record<string, unknown>): Bookmark {
@@ -75,6 +76,7 @@ function bmToLocal(r: Record<string, unknown>): Bookmark {
     position: Number(r.position ?? 0),
     createdAt: Number(r.created_at ?? 0),
     updatedAt: Number(r.updated_at ?? 0),
+    deleted: Number(r.deleted ?? 0),
   }
 }
 function noteToRemote(n: Note, userId: string) {
@@ -87,6 +89,7 @@ function noteToRemote(n: Note, userId: string) {
     source_url: n.sourceUrl,
     created_at: n.createdAt,
     updated_at: n.updatedAt,
+    deleted: n.deleted,
   }
 }
 function noteToLocal(r: Record<string, unknown>): Note {
@@ -98,6 +101,7 @@ function noteToLocal(r: Record<string, unknown>): Note {
     sourceUrl: (r.source_url as string) ?? null,
     createdAt: Number(r.created_at ?? 0),
     updatedAt: Number(r.updated_at ?? 0),
+    deleted: Number(r.deleted ?? 0),
   }
 }
 
@@ -123,9 +127,9 @@ export async function syncNow(url: string, anonKey: string): Promise<{ pulled: n
   await api.sync.applyBookmarks(pulledBm)
   await api.sync.applyNotes(pulledNotes)
 
-  // 2) Push merged local set up.
-  const localBm = ((await api.bookmarks.list()) as { items: Bookmark[] })?.items ?? []
-  const localNotes = ((await api.notes.list()) as Note[]) ?? []
+  // 2) Push merged local set up — ALL rows incl. tombstones so deletes propagate.
+  const localBm = ((await api.sync.allBookmarks()) as Bookmark[]) ?? []
+  const localNotes = ((await api.sync.allNotes()) as Note[]) ?? []
   if (localBm.length) {
     const { error } = await c.from('bookmarks').upsert(localBm.map((b) => bmToRemote(b, userId)))
     if (error) throw new Error(`bookmarks push: ${error.message}`)

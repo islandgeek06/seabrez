@@ -47,3 +47,53 @@ describe('sqlite shim + migrations', () => {
     db2.close()
   })
 })
+
+describe('delete-sync: tombstones + last-write-wins', () => {
+  const f2 = path.join(os.tmpdir(), `intelleson-tomb-${Date.now()}.db`)
+  afterAll(() => {
+    try {
+      fs.unlinkSync(f2)
+    } catch {
+      /* ignore */
+    }
+  })
+
+  it('applies all migrations, soft-deletes, and honors LWW on the deleted flag', async () => {
+    const db = await openDatabase(f2)
+    for (const m of MIGRATIONS) {
+      db.exec(m.sql)
+      db.pragma(`user_version = ${m.version}`)
+    }
+    // Migration 2 added the column.
+    const cols = (db.prepare('PRAGMA table_info(bookmarks)').all() as { name: string }[]).map(
+      (c) => c.name,
+    )
+    expect(cols).toContain('deleted')
+
+    const ins = db.prepare(
+      `INSERT INTO bookmarks (id, folderId, workspaceId, title, url, favicon, pinned, position, createdAt, updatedAt, deleted)
+       VALUES (@id,@folderId,@workspaceId,@title,@url,@favicon,@pinned,@position,@createdAt,@updatedAt,@deleted)`,
+    )
+    ins.run({ id: 'b1', folderId: null, workspaceId: null, title: 'A', url: 'https://a.com', favicon: null, pinned: 0, position: 0, createdAt: 1, updatedAt: 10, deleted: 0 })
+
+    // Soft delete → hidden from the live list, present in the full sync list.
+    db.prepare('UPDATE bookmarks SET deleted = 1, updatedAt = ? WHERE id = ?').run(20, 'b1')
+    expect((db.prepare('SELECT COUNT(*) c FROM bookmarks WHERE deleted = 0').get() as { c: number }).c).toBe(0)
+    expect((db.prepare('SELECT COUNT(*) c FROM bookmarks').get() as { c: number }).c).toBe(1)
+
+    // Incoming OLDER remote copy (updatedAt=15 < 20) must NOT resurrect it.
+    const upsert = db.prepare(
+      `INSERT INTO bookmarks (id, folderId, workspaceId, title, url, favicon, pinned, position, createdAt, updatedAt, deleted)
+       VALUES (@id,@folderId,@workspaceId,@title,@url,@favicon,@pinned,@position,@createdAt,@updatedAt,@deleted)
+       ON CONFLICT(id) DO UPDATE SET deleted=excluded.deleted, updatedAt=excluded.updatedAt
+       WHERE excluded.updatedAt > bookmarks.updatedAt`,
+    )
+    upsert.run({ id: 'b1', folderId: null, workspaceId: null, title: 'A', url: 'https://a.com', favicon: null, pinned: 0, position: 0, createdAt: 1, updatedAt: 15, deleted: 0 })
+    expect((db.prepare('SELECT deleted FROM bookmarks WHERE id = ?').get('b1') as { deleted: number }).deleted).toBe(1)
+
+    // Incoming NEWER copy (updatedAt=30) that un-deletes wins.
+    upsert.run({ id: 'b1', folderId: null, workspaceId: null, title: 'A', url: 'https://a.com', favicon: null, pinned: 0, position: 0, createdAt: 1, updatedAt: 30, deleted: 0 })
+    expect((db.prepare('SELECT deleted FROM bookmarks WHERE id = ?').get('b1') as { deleted: number }).deleted).toBe(0)
+    db.close()
+  })
+})

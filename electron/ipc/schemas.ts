@@ -128,6 +128,7 @@ export const S = {
           position: z.number().int(),
           createdAt: z.number(),
           updatedAt: z.number(),
+          deleted: z.number().int(),
         }),
       )
       .max(10000),
@@ -143,6 +144,7 @@ export const S = {
           sourceUrl: z.string().nullable(),
           createdAt: z.number(),
           updatedAt: z.number(),
+          deleted: z.number().int(),
         }),
       )
       .max(10000),

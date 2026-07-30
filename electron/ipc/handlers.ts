@@ -207,6 +207,9 @@ export function registerIpc(ctx: IpcContext) {
     for (const r of rows) notes.upsert(r)
     return { applied: rows.length }
   })
+  // All local rows incl. tombstones, so the pusher can propagate deletes.
+  handle('sync:allBookmarks', null, () => bookmarks.listAllForSync())
+  handle('sync:allNotes', null, () => notes.listAllForSync())
 
   // ---- window controls ----
   handle('window:minimize', null, (_a, e) => BrowserWindow.fromWebContents(e.sender)?.minimize())

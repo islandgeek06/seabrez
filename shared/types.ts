@@ -47,6 +47,7 @@ export interface Bookmark {
   position: number
   createdAt: number
   updatedAt: number
+  deleted: number
 }
 
 export interface Note {
@@ -57,6 +58,7 @@ export interface Note {
   sourceUrl: string | null
   createdAt: number
   updatedAt: number
+  deleted: number
 }
 
 export interface PersistedTab {

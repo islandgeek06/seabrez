@@ -101,6 +101,8 @@ const api = {
   sync: {
     applyBookmarks: (rows: unknown[]) => invoke('sync:applyBookmarks', { rows }),
     applyNotes: (rows: unknown[]) => invoke('sync:applyNotes', { rows }),
+    allBookmarks: () => invoke('sync:allBookmarks'),
+    allNotes: () => invoke('sync:allNotes'),
   },
   window: {
     minimize: () => invoke('window:minimize'),

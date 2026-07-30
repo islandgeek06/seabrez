@@ -29,7 +29,8 @@ create table if not exists public.bookmarks (
   pinned int not null default 0,
   position int not null default 0,
   created_at bigint not null default 0,
-  updated_at bigint not null default 0
+  updated_at bigint not null default 0,
+  deleted int not null default 0
 );
 
 create table if not exists public.notes (
@@ -40,7 +41,8 @@ create table if not exists public.notes (
   content text not null default '',
   source_url text,
   created_at bigint not null default 0,
-  updated_at bigint not null default 0
+  updated_at bigint not null default 0,
+  deleted int not null default 0
 );
 
 alter table public.bookmarks enable row level security;
@@ -81,10 +83,20 @@ create policy "own notes" on public.notes
 - Session persists locally (auto-refreshed), so you stay signed in across
   restarts.
 
+## Upgrading an existing project (delete-sync)
+
+If you created the tables before delete-sync was added, run this once in the
+SQL editor to add the tombstone column:
+
+```sql
+alter table public.bookmarks add column if not exists deleted int not null default 0;
+alter table public.notes     add column if not exists deleted int not null default 0;
+```
+
 ## Known limitations
 
-- **Deletes don't propagate yet.** Deleting a bookmark/note on one device won't
-  remove it from others (it'll re-sync back). Tombstone-based delete sync is a
-  planned follow-up.
+- **Deletes now sync** via soft-delete tombstones (last-write-wins): deleting a
+  bookmark/note on one device removes it on the others after a sync. Tombstone
+  rows are retained (not purged) for now.
 - Conflict resolution is last-write-wins per item (no field-level merge).
 - History/tabs/settings are not synced yet.
