@@ -9,6 +9,7 @@ import { AssistantPanel } from './components/AssistantPanel'
 import { CommandPalette } from './components/CommandPalette'
 import { ComparePicker } from './components/ComparePicker'
 import { FindBar } from './components/FindBar'
+import { Logo } from './components/Logo'
 
 export default function App() {
   const ready = useStore((s) => s.ready)
@@ -68,7 +69,7 @@ export default function App() {
   if (!ready) {
     return (
       <div className="boot">
-        <div className="boot-logo">◈</div>
+        <div className="boot-logo"><Logo size={32} /></div>
         <p>Starting SeaBrez…</p>
       </div>
     )

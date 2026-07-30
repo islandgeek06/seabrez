@@ -8,6 +8,7 @@ import {
   Sparkles,
 } from 'lucide-react'
 import { useStore } from '../store'
+import { Logo } from './Logo'
 import type { Surface } from '../store'
 
 const NAV: { surface: Surface; icon: typeof Bookmark; label: string }[] = [
@@ -29,7 +30,7 @@ export function Sidebar() {
   return (
     <nav className="sidebar" aria-label="Primary">
       <button className="sidebar-logo" title="SeaBrez" onClick={() => setSurface('newtab')}>
-        ◈
+        <Logo size={22} />
       </button>
 
       <div className="sidebar-group">
