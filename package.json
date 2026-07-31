@@ -1,6 +1,6 @@
 {
   "name": "intelleson-browser",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "SeaBrez — an AI-first desktop browser built on Electron (Chromium) + React + TypeScript, with local SQLite persistence and streaming AI.",
   "author": "Trimid Global",
   "license": "MIT",
@@ -74,7 +74,7 @@
       "target": "nsis",
       "icon": "assets/icon.ico",
       "signAndEditExecutable": false,
-      "artifactName": "${productName}-Setup-${version}.${ext}"
+      "artifactName": "${productName}-Setup.${ext}"
     },
     "nsis": {
       "oneClick": false,
