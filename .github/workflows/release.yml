@@ -15,9 +15,6 @@ permissions:
 jobs:
   build-windows:
     runs-on: windows-latest
-    env:
-      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
     steps:
       - uses: actions/checkout@v4
 
@@ -42,20 +39,3 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CSC_IDENTITY_AUTO_DISCOVERY: false
-
-      # Upload the installer to your Supabase Storage bucket ("downloads") so the
-      # public download comes from your Supabase, not GitHub. Runs only if the
-      # SUPABASE_* repo secrets are set; otherwise it's skipped.
-      - name: Upload installer to Supabase Storage
-        if: ${{ env.SUPABASE_URL != '' }}
-        shell: bash
-        run: |
-          code=$(curl -sS -o resp.txt -w "%{http_code}" -X POST \
-            "$SUPABASE_URL/storage/v1/object/download/SeaBrez-Setup.exe" \
-            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
-            -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
-            -H "x-upsert: true" \
-            -H "Content-Type: application/octet-stream" \
-            --data-binary @"release/SeaBrez-Setup.exe")
-          echo "HTTP $code"; cat resp.txt; echo
-          test "$code" = "200"
