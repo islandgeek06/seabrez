@@ -53,6 +53,7 @@ jobs:
           curl --fail -sS -X POST \
             "$SUPABASE_URL/storage/v1/object/downloads/SeaBrez-Setup.exe" \
             -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
             -H "x-upsert: true" \
             -H "Content-Type: application/octet-stream" \
             --data-binary @"release/SeaBrez-Setup.exe"
