@@ -50,11 +50,12 @@ jobs:
         if: ${{ env.SUPABASE_URL != '' }}
         shell: bash
         run: |
-          curl --fail -sS -X POST \
+          code=$(curl -sS -o resp.txt -w "%{http_code}" -X POST \
             "$SUPABASE_URL/storage/v1/object/downloads/SeaBrez-Setup.exe" \
             -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
             -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
             -H "x-upsert: true" \
             -H "Content-Type: application/octet-stream" \
-            --data-binary @"release/SeaBrez-Setup.exe"
-          echo "Uploaded to Supabase Storage."
+            --data-binary @"release/SeaBrez-Setup.exe")
+          echo "HTTP $code"; cat resp.txt; echo
+          test "$code" = "200"

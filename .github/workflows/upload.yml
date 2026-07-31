@@ -1,0 +1,37 @@
+name: Upload to Supabase
+
+# Manual: grabs the installer from the latest GitHub release and uploads it to
+# your Supabase Storage 'downloads' bucket. Fast (~30s, no rebuild) — used to
+# test/refresh the Supabase copy. Run from the Actions tab → "Run workflow".
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - name: Download installer from latest release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release download --repo ${{ github.repository }} --pattern 'SeaBrez-Setup.exe' --dir . --clobber
+
+      - name: Upload to Supabase Storage (verbose)
+        run: |
+          echo "Uploading $(ls -la SeaBrez-Setup.exe)"
+          code=$(curl -sS -o resp.txt -w "%{http_code}" -X POST \
+            "$SUPABASE_URL/storage/v1/object/downloads/SeaBrez-Setup.exe" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "x-upsert: true" \
+            -H "Content-Type: application/octet-stream" \
+            --data-binary @"SeaBrez-Setup.exe")
+          echo "HTTP $code"
+          echo "Response: $(cat resp.txt)"
+          test "$code" = "200"
