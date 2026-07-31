@@ -55,6 +55,11 @@
   box-sizing: border-box;
 }
 
+/* Lighter, more refined icon strokes across the app (Lucide defaults to 2). */
+svg.lucide {
+  stroke-width: 1.6px;
+}
+
 html,
 body,
 #root {
@@ -1721,6 +1726,198 @@ kbd {
   color: var(--accent);
   text-decoration: underline;
   font: inherit;
+}
+
+/* ==========================================================================
+   Home / new-tab (redesigned)
+   ========================================================================== */
+.home {
+  height: 100%;
+  display: grid;
+  place-items: center;
+  padding: 40px 24px 80px;
+  overflow: auto;
+}
+.home-inner {
+  width: 100%;
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.home-head {
+  text-align: center;
+  margin-bottom: 28px;
+}
+.home-head h1 {
+  font-size: 34px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+.home-ws {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--text-dim);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+.home-search {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 54px;
+  padding: 0 20px;
+  border-radius: 16px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  box-shadow: var(--shadow);
+  transition: var(--transition);
+}
+.home-search:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 18%, transparent), var(--shadow);
+}
+.home-search input {
+  flex: 1;
+  border: none;
+  background: none;
+  outline: none;
+  font-size: 16px;
+  color: var(--text);
+}
+
+.shortcuts {
+  width: 100%;
+  margin-top: 40px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  gap: 8px 4px;
+  justify-items: center;
+}
+.shortcut {
+  position: relative;
+  width: 84px;
+}
+.shortcut-btn {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 4px;
+  border-radius: 14px;
+  transition: var(--transition);
+}
+.shortcut-btn:hover {
+  background: var(--surface);
+}
+.shortcut-tile {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 22px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+}
+.shortcut-tile-add {
+  background: transparent !important;
+  color: var(--text-faint);
+  border: 1.5px dashed var(--border);
+  box-shadow: none;
+}
+.shortcut-btn:hover .shortcut-tile-add {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.shortcut-name {
+  font-size: 12px;
+  color: var(--text-dim);
+  max-width: 76px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.shortcut-remove {
+  position: absolute;
+  top: 4px;
+  right: 8px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  transition: var(--transition);
+}
+.shortcut:hover .shortcut-remove {
+  opacity: 1;
+}
+.shortcut-remove:hover {
+  color: #ef4444;
+  border-color: #ef4444;
+}
+
+/* add-shortcut dialog */
+.add-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(3px);
+  display: grid;
+  place-items: center;
+  animation: fade var(--transition);
+}
+.add-card {
+  width: 360px;
+  max-width: 90vw;
+  padding: 22px;
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.add-card h3 {
+  margin: 0;
+  font-size: 16px;
+}
+.add-card label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--text-dim);
+}
+.add-card input {
+  height: 38px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-elev);
+  padding: 0 12px;
+  outline: none;
+  font-size: 14px;
+  color: var(--text);
+}
+.add-card input:focus {
+  border-color: var(--accent);
+}
+.add-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
 }
 
 /* preview-mode (non-Electron) warning */
