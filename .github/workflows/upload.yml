@@ -22,6 +22,15 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh release download --repo ${{ github.repository }} --pattern 'SeaBrez-Setup.exe' --dir . --clobber
 
+      - name: List existing Supabase buckets
+        run: |
+          echo "SUPABASE_URL host: $(echo "$SUPABASE_URL" | sed 's#https\?://##;s#/.*##')"
+          echo "Buckets found in this project:"
+          curl -sS "$SUPABASE_URL/storage/v1/bucket" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "apikey: $SUPABASE_SERVICE_ROLE_KEY"
+          echo
+
       - name: Upload to Supabase Storage (verbose)
         run: |
           echo "Uploading $(ls -la SeaBrez-Setup.exe)"
