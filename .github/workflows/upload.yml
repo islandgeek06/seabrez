@@ -26,7 +26,7 @@ jobs:
         run: |
           echo "Uploading $(ls -la SeaBrez-Setup.exe)"
           code=$(curl -sS -o resp.txt -w "%{http_code}" -X POST \
-            "$SUPABASE_URL/storage/v1/object/downloads/SeaBrez-Setup.exe" \
+            "$SUPABASE_URL/storage/v1/object/download/SeaBrez-Setup.exe" \
             -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
             -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
             -H "x-upsert: true" \
