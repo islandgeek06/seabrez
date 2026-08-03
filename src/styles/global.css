@@ -2139,3 +2139,42 @@ kbd {
 .appmenu kbd {
   font-size: 10.5px;
 }
+
+/* Home tweaks: date top-right, weather tile, visible search ring */
+.home-top {
+  align-items: baseline;
+}
+.home-date {
+  margin: 0;
+  text-align: right;
+  white-space: nowrap;
+}
+.weather-tile {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.weather-tile .weather {
+  flex-direction: column;
+  gap: 6px;
+  padding: 0;
+}
+.weather-tile .weather-info {
+  align-items: center;
+}
+.weather-tile .weather-emoji {
+  font-size: 44px;
+}
+.weather-tile .weather-temp {
+  font-size: 30px;
+}
+
+/* Always-visible accent ring around the home search bar (restored) */
+.home-search {
+  border: 1px solid color-mix(in srgb, var(--accent) 42%, var(--border));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent), var(--shadow);
+}
+.home-search:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 26%, transparent), var(--shadow);
+}

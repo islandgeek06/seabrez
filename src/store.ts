@@ -66,6 +66,7 @@ const isBlankUrl = (u?: string | null): boolean => !u || u === 'about:blank'
 const FALLBACK_SETTINGS: Settings = {
   theme: 'dark',
   accent: '#6d5efc',
+  displayName: '',
   searchEngine: 'google',
   homePage: 'intelleson://newtab',
   restoreSession: true,

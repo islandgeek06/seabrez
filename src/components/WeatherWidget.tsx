@@ -55,17 +55,23 @@ export function WeatherWidget() {
     }
   }, [])
 
-  if (failed) return null
+  if (failed)
+    return (
+      <div className="weather weather-loading">
+        <span className="weather-emoji">🌡️</span>
+        <span className="weather-sub">Weather unavailable</span>
+      </div>
+    )
   if (!w)
     return (
-      <div className="weather weather-loading glass">
+      <div className="weather weather-loading">
         <span className="weather-emoji">🌡️</span>
         <span className="weather-sub">Loading weather…</span>
       </div>
     )
 
   return (
-    <div className="weather glass">
+    <div className="weather">
       <span className="weather-emoji">{w.emoji}</span>
       <div className="weather-info">
         <span className="weather-temp">{w.tempF}°</span>

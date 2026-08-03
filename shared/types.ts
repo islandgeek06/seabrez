@@ -128,6 +128,7 @@ export interface AiMessage {
 export interface Settings {
   theme: ThemeMode
   accent: string
+  displayName: string
   searchEngine: SearchEngine
   homePage: string
   restoreSession: boolean

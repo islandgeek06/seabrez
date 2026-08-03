@@ -6,6 +6,7 @@ const KEY = 'app.settings'
 export const DEFAULT_SETTINGS: Settings = {
   theme: 'dark',
   accent: '#6d5efc',
+  displayName: '',
   searchEngine: 'google',
   homePage: 'intelleson://newtab',
   restoreSession: true,

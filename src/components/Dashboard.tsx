@@ -53,9 +53,7 @@ export function Dashboard() {
   const bookmarks = useStore((s) => s.bookmarks)
   const historyList = useStore((s) => s.history)
   const notes = useStore((s) => s.notes)
-  const workspaces = useStore((s) => s.workspaces)
-  const activeWs = useStore((s) => s.activeWorkspaceId)
-  const ws = workspaces.find((w) => w.id === activeWs)
+  const displayName = useStore((s) => s.settings.displayName)
 
   const [q, setQ] = useState('')
   const [shortcuts, setShortcuts] = useState<Shortcut[]>(() =>
@@ -120,11 +118,11 @@ export function Dashboard() {
     <div className="home">
       <div className="home-inner">
         <header className="home-top">
-          <div>
-            <h1>{greeting}{ws && <span className="home-ws"> · {ws.icon} {ws.name}</span>}</h1>
-            <p className="home-date">{dateStr}</p>
-          </div>
-          <WeatherWidget />
+          <h1>
+            {greeting}
+            {displayName ? `, ${displayName}` : ''}
+          </h1>
+          <p className="home-date">{dateStr}</p>
         </header>
 
         {/* Single search — URLs load, everything else goes to AI search */}
@@ -179,6 +177,10 @@ export function Dashboard() {
 
         {/* Bento grid of widgets */}
         <div className="bento">
+          <section className="tile glass weather-tile">
+            <WeatherWidget />
+          </section>
+
           <section className="tile glass bento-2">
             <h3>📋 Daily briefing</h3>
             <ul className="briefing">

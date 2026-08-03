@@ -68,6 +68,13 @@ export function Settings() {
 
       <section className="card glass">
         <h3>General</h3>
+        <Row label="Your name (shown on the home page)">
+          <input
+            value={settings.displayName}
+            onChange={(e) => upd('displayName', e.target.value)}
+            placeholder="e.g. Alex, or your business name"
+          />
+        </Row>
         <Row label="Restore previous session on startup">
           <input type="checkbox" checked={settings.restoreSession} onChange={(e) => upd('restoreSession', e.target.checked)} />
         </Row>
