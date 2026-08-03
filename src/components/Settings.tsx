@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Trash2 } from 'lucide-react'
 import { useStore } from '../store'
 import { api, isElectron } from '../api'
+import { WsIconPicker } from './WorkspaceIcon'
 import type { AiProviderId, Settings as SettingsType, ThemeMode } from '../../shared/types'
 
 const ACCENTS = ['#6d5efc', '#22c55e', '#f59e0b', '#06b6d4', '#ec4899', '#ef4444']
@@ -41,7 +42,7 @@ export function Settings() {
   const updateWorkspace = useStore((s) => s.updateWorkspace)
   const removeWorkspace = useStore((s) => s.removeWorkspace)
   const [wsName, setWsName] = useState('')
-  const [wsEmoji, setWsEmoji] = useState('🗂️')
+  const [wsEmoji, setWsEmoji] = useState('user')
   const [wsColor, setWsColor] = useState(ACCENTS[0])
 
   useEffect(() => {
@@ -146,14 +147,10 @@ export function Settings() {
         <ul className="ws-manage">
           {workspaces.map((w) => (
             <li key={w.id}>
-              <input
-                className="ws-emoji-input"
-                defaultValue={w.icon}
-                maxLength={2}
-                aria-label="Icon"
-                onBlur={(e) => {
-                  const v = e.target.value.trim() || '🗂️'
-                  if (v !== w.icon) void updateWorkspace(w.id, { icon: v })
+              <WsIconPicker
+                value={w.icon}
+                onChange={(key) => {
+                  if (key !== w.icon) void updateWorkspace(w.id, { icon: key })
                 }}
               />
               <input
@@ -194,17 +191,11 @@ export function Settings() {
             if (wsName.trim()) {
               void createWorkspace({ name: wsName.trim(), icon: wsEmoji, color: wsColor })
               setWsName('')
-              setWsEmoji('🗂️')
+              setWsEmoji('user')
             }
           }}
         >
-          <input
-            className="ws-emoji-input"
-            value={wsEmoji}
-            maxLength={2}
-            onChange={(e) => setWsEmoji(e.target.value)}
-            aria-label="New workspace icon"
-          />
+          <WsIconPicker value={wsEmoji} onChange={setWsEmoji} />
           <input
             className="ws-name-input"
             value={wsName}

@@ -2352,3 +2352,91 @@ kbd {
   font-size: 11px;
   color: var(--text-faint);
 }
+
+/* Premium workspace icons (v0.2.7) */
+.sidebar-ws.active {
+  color: var(--ws-accent);
+}
+.ws-emoji {
+  font-size: 16px;
+  line-height: 1;
+}
+/* Workspace icon picker (Settings) */
+.ws-iconpick {
+  position: relative;
+  flex: 0 0 auto;
+}
+.ws-iconpick-btn {
+  width: 42px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-elev);
+  color: var(--text);
+  transition: var(--transition);
+}
+.ws-iconpick-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.ws-iconpick-pop {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 40;
+  display: grid;
+  grid-template-columns: repeat(6, 34px);
+  gap: 4px;
+  padding: 8px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg, 0 12px 40px rgba(0, 0, 0, 0.4));
+}
+.ws-iconpick-opt {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+  transition: var(--transition);
+}
+.ws-iconpick-opt:hover {
+  background: var(--surface);
+  color: var(--text);
+}
+.ws-iconpick-opt.active {
+  color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+/* Bold brand lockup on the home page (v0.2.7) */
+.brand-hero {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin: 4px 0 26px;
+}
+.brand-mark {
+  width: 52px;
+  height: 52px;
+  border-radius: 15px;
+  background: linear-gradient(135deg, #22d3ee, #3b82f6 55%, #6d5efc);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.42);
+}
+.brand-name {
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  background: linear-gradient(120deg, #22d3ee, #3b82f6 45%, #6d5efc);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}

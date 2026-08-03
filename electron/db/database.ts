@@ -49,8 +49,8 @@ function migrate() {
 function seedDefaults() {
   const count = db.prepare('SELECT COUNT(*) AS c FROM workspaces').get() as { c: number }
   if (count.c === 0) {
-    workspaces.create({ name: 'Personal', icon: '🏠', color: '#6d5efc' })
-    workspaces.create({ name: 'Work', icon: '💼', color: '#22c55e' })
+    workspaces.create({ name: 'Personal', icon: 'user', color: '#6d5efc' })
+    workspaces.create({ name: 'Work', icon: 'work', color: '#22c55e' })
   }
 }
 
@@ -89,7 +89,7 @@ export const workspaces = {
     const ws: Workspace = {
       id: uid(),
       name: input.name,
-      icon: input.icon ?? '🗂️',
+      icon: input.icon ?? 'layers',
       color: input.color ?? '#6d5efc',
       position: pos,
       createdAt: ts,

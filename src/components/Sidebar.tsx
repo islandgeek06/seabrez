@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { useStore } from '../store'
 import { Logo } from './Logo'
+import { WsIcon } from './WorkspaceIcon'
 import type { Surface } from '../store'
 
 const NAV: { surface: Surface; icon: typeof Bookmark; label: string }[] = [
@@ -62,7 +63,7 @@ export function Sidebar() {
             style={{ ['--ws-accent' as string]: w.color }}
             onClick={() => setWorkspace(w.id)}
           >
-            {w.icon}
+            <WsIcon icon={w.icon} size={18} />
           </button>
         ))}
         <button

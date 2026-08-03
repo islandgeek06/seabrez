@@ -4,6 +4,7 @@ import { useStore } from '../store'
 import { api } from '../api'
 import type { NewsItem } from '../../shared/types'
 import { WeatherWidget } from './WeatherWidget'
+import { Logo } from './Logo'
 
 interface Shortcut {
   id: string
@@ -165,6 +166,13 @@ export function Dashboard() {
   return (
     <div className="home">
       <div className="home-inner">
+        <div className="brand-hero">
+          <span className="brand-mark">
+            <Logo size={30} />
+          </span>
+          <span className="brand-name">SeaBrez</span>
+        </div>
+
         <header className="home-top">
           <h1>
             {greeting}
