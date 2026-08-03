@@ -29,15 +29,16 @@
 
 /* --- Light --- */
 :root[data-theme='light'] {
-  --bg: #f4f5f9;
-  --bg-elev: #ffffff;
-  --surface: rgba(0, 0, 0, 0.028);
-  --surface-strong: rgba(255, 255, 255, 0.9);
-  --border: rgba(0, 0, 0, 0.09);
-  --text: #14161c;
-  --text-dim: #565b68;
-  --text-faint: #8b90a0;
-  --shadow: 0 10px 40px rgba(20, 25, 50, 0.14);
+  /* Muted "dim light" palette — a soft cool grey rather than glaring white. */
+  --bg: #d6d9e1;
+  --bg-elev: #e7e9ef;
+  --surface: rgba(0, 0, 0, 0.05);
+  --surface-strong: rgba(236, 238, 243, 0.92);
+  --border: rgba(0, 0, 0, 0.12);
+  --text: #191b21;
+  --text-dim: #4b505e;
+  --text-faint: #797e8f;
+  --shadow: 0 10px 40px rgba(20, 25, 50, 0.16);
   --glass-blur: 22px;
 }
 
