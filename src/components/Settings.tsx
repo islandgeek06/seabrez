@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Trash2 } from 'lucide-react'
 import { useStore } from '../store'
 import { api, isElectron } from '../api'
 import type { AiProviderId, Settings as SettingsType, ThemeMode } from '../../shared/types'
@@ -35,6 +36,13 @@ export function Settings() {
   const lastSyncedAt = useStore((s) => s.lastSyncedAt)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const workspaces = useStore((s) => s.workspaces)
+  const createWorkspace = useStore((s) => s.createWorkspace)
+  const updateWorkspace = useStore((s) => s.updateWorkspace)
+  const removeWorkspace = useStore((s) => s.removeWorkspace)
+  const [wsName, setWsName] = useState('')
+  const [wsEmoji, setWsEmoji] = useState('🗂️')
+  const [wsColor, setWsColor] = useState(ACCENTS[0])
 
   useEffect(() => {
     void (async () => setVersion((await api.appInfo.version()) as string))()
@@ -127,6 +135,98 @@ export function Settings() {
         <Row label="Dyslexia-friendly font">
           <input type="checkbox" checked={settings.dyslexiaFont} onChange={(e) => upd('dyslexiaFont', e.target.checked)} />
         </Row>
+      </section>
+
+      <section className="card glass">
+        <h3>Workspaces</h3>
+        <p className="muted small">
+          Separate spaces with their own tabs, accent color, and AI focus. Switch between them
+          from the sidebar.
+        </p>
+        <ul className="ws-manage">
+          {workspaces.map((w) => (
+            <li key={w.id}>
+              <input
+                className="ws-emoji-input"
+                defaultValue={w.icon}
+                maxLength={2}
+                aria-label="Icon"
+                onBlur={(e) => {
+                  const v = e.target.value.trim() || '🗂️'
+                  if (v !== w.icon) void updateWorkspace(w.id, { icon: v })
+                }}
+              />
+              <input
+                className="ws-name-input"
+                defaultValue={w.name}
+                aria-label="Name"
+                onBlur={(e) => {
+                  const v = e.target.value.trim()
+                  if (v && v !== w.name) void updateWorkspace(w.id, { name: v })
+                }}
+              />
+              <div className="accents ws-accents">
+                {ACCENTS.map((c) => (
+                  <button
+                    key={c}
+                    className={`accent-dot ${w.color === c ? 'active' : ''}`}
+                    style={{ background: c }}
+                    title="Accent"
+                    onClick={() => void updateWorkspace(w.id, { color: c })}
+                  />
+                ))}
+              </div>
+              <button
+                className="task-del"
+                title="Delete workspace"
+                disabled={workspaces.length <= 1}
+                onClick={() => void removeWorkspace(w.id)}
+              >
+                <Trash2 size={15} />
+              </button>
+            </li>
+          ))}
+        </ul>
+        <form
+          className="ws-add"
+          onSubmit={(e) => {
+            e.preventDefault()
+            if (wsName.trim()) {
+              void createWorkspace({ name: wsName.trim(), icon: wsEmoji, color: wsColor })
+              setWsName('')
+              setWsEmoji('🗂️')
+            }
+          }}
+        >
+          <input
+            className="ws-emoji-input"
+            value={wsEmoji}
+            maxLength={2}
+            onChange={(e) => setWsEmoji(e.target.value)}
+            aria-label="New workspace icon"
+          />
+          <input
+            className="ws-name-input"
+            value={wsName}
+            onChange={(e) => setWsName(e.target.value)}
+            placeholder="New workspace name"
+            aria-label="New workspace name"
+          />
+          <div className="accents ws-accents">
+            {ACCENTS.map((c) => (
+              <button
+                key={c}
+                type="button"
+                className={`accent-dot ${wsColor === c ? 'active' : ''}`}
+                style={{ background: c }}
+                onClick={() => setWsColor(c)}
+              />
+            ))}
+          </div>
+          <button className="btn primary" type="submit" disabled={!wsName.trim()}>
+            Add
+          </button>
+        </form>
       </section>
 
       <section className="card glass">

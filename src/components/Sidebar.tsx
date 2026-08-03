@@ -65,6 +65,14 @@ export function Sidebar() {
             {w.icon}
           </button>
         ))}
+        <button
+          className="sidebar-ws sidebar-ws-add"
+          title="Add / manage workspaces"
+          aria-label="Add or manage workspaces"
+          onClick={() => setSurface('settings')}
+        >
+          +
+        </button>
       </div>
 
       <button

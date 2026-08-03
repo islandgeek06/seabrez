@@ -145,6 +145,8 @@ interface State {
   // workspaces
   setWorkspace: (id: string) => void
   createWorkspace: (w: { name: string; icon?: string; color?: string }) => Promise<void>
+  updateWorkspace: (id: string, patch: { name?: string; icon?: string; color?: string }) => Promise<void>
+  removeWorkspace: (id: string) => Promise<void>
 
   // tabs / nav
   newTab: (url?: string, opts?: { isPrivate?: boolean; background?: boolean }) => Promise<void>
@@ -339,6 +341,17 @@ export const useStore = create<State>((set, get) => ({
   async createWorkspace(w) {
     await api.workspaces.create(w)
     set({ workspaces: (await api.workspaces.list()) as Workspace[] })
+  },
+  async updateWorkspace(id, patch) {
+    const list = (await api.workspaces.update({ id, ...patch })) as Workspace[]
+    set({ workspaces: list })
+    // Keep the accent in sync if the active workspace's color changed.
+    if (patch.color && get().activeWorkspaceId === id) void get().setSetting('accent', patch.color)
+  },
+  async removeWorkspace(id) {
+    const list = (await api.workspaces.remove(id)) as Workspace[]
+    set({ workspaces: list })
+    if (get().activeWorkspaceId === id && list[0]) get().setWorkspace(list[0].id)
   },
 
   async newTab(url, opts) {

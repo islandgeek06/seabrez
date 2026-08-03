@@ -2196,3 +2196,67 @@ kbd {
   white-space: nowrap;
   -webkit-app-region: no-drag;
 }
+
+/* Workspace manager (Settings) + sidebar add */
+.sidebar-ws-add {
+  color: var(--text-faint);
+  font-size: 20px;
+  border: 1.5px dashed var(--border);
+}
+.sidebar-ws-add:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--surface);
+}
+.ws-manage {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ws-manage li,
+.ws-add {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ws-emoji-input {
+  width: 42px;
+  text-align: center;
+  height: 34px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-elev);
+  outline: none;
+  font-size: 16px;
+  flex: 0 0 auto;
+}
+.ws-name-input {
+  flex: 1;
+  min-width: 0;
+  height: 34px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-elev);
+  padding: 0 12px;
+  outline: none;
+}
+.ws-emoji-input:focus,
+.ws-name-input:focus {
+  border-color: var(--accent);
+}
+.ws-accents {
+  display: flex;
+  gap: 5px;
+  flex: 0 0 auto;
+}
+.ws-accents .accent-dot {
+  width: 20px;
+  height: 20px;
+}
+.ws-add {
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
