@@ -11,7 +11,7 @@ import {
 } from '../db/database'
 import { getSettings, updateSettings } from '../services/settings'
 import { hasApiKey, setApiKey } from '../security/keystore'
-import { webSearch, validateSearchKey } from '../browser/search'
+import { webSearch, validateSearchKey, topStories } from '../browser/search'
 import { extractPage } from '../ai/extract'
 import type { TabManager } from '../browser/tabs'
 import type { DownloadManager } from '../browser/downloads'
@@ -201,6 +201,9 @@ export function registerIpc(ctx: IpcContext) {
   })
   handle('search:hasKey', null, () => hasApiKey('brave'))
   handle('search:validate', null, () => validateSearchKey())
+
+  // ---- news: real top stories (Hacker News front page, keyless) ----
+  handle('news:top', null, () => topStories())
 
   // ---- cloud sync: apply pulled rows into local SQLite (last-write-wins) ----
   handle('sync:applyBookmarks', S.syncBookmarks, ({ rows }) => {

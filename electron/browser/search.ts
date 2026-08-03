@@ -1,7 +1,7 @@
 import { net } from 'electron'
 import { getApiKey } from '../security/keystore'
 import { getSettings } from '../services/settings'
-import type { SearchResult } from '../../shared/types'
+import type { SearchResult, NewsItem } from '../../shared/types'
 
 // Web search sources. Default is DuckDuckGo, which needs NO API key and NO
 // signup. Brave is an optional keyed source. All requests go through Electron's
@@ -121,6 +121,40 @@ export async function webSearch(
 ): Promise<{ results?: SearchResult[]; error?: string }> {
   const source = getSettings().webSearchSource
   return source === 'brave' ? braveSearch(query) : duckduckgoSearch(query)
+}
+
+// --- Top stories (no key) -------------------------------------------------
+// Real, keyless news from the Hacker News front page (Algolia API). Requests
+// go through Electron's net stack, so no CORS/proxy issues.
+export async function topStories(): Promise<{ items?: NewsItem[]; error?: string }> {
+  try {
+    const res = await fetchTimeout(
+      'https://hn.algolia.com/api/v1/search?tags=front_page&hitsPerPage=10',
+      { headers: { Accept: 'application/json' } },
+    )
+    if (!res.ok) return { error: `News error (HTTP ${res.status}).` }
+    const data = (await res.json()) as {
+      hits?: { title?: string; url?: string; objectID?: string }[]
+    }
+    const items: NewsItem[] = (data.hits ?? [])
+      .map((h) => {
+        const url = h.url || `https://news.ycombinator.com/item?id=${h.objectID}`
+        let source = ''
+        try {
+          source = new URL(url).hostname.replace(/^www\./, '')
+        } catch {
+          source = ''
+        }
+        return { title: stripTags(decodeHtml(h.title ?? '')), url, source }
+      })
+      .filter((i) => i.title && /^https?:\/\//.test(i.url))
+      .slice(0, 6)
+    if (items.length === 0) return { error: 'No stories right now.' }
+    return { items }
+  } catch (e) {
+    const aborted = (e as Error).name === 'AbortError'
+    return { error: aborted ? 'Timed out fetching news.' : (e as Error).message }
+  }
 }
 
 export async function validateSearchKey(): Promise<{ ok: boolean; message: string }> {

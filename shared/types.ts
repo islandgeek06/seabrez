@@ -6,6 +6,12 @@ export type ThemeMode = 'dark' | 'light' | 'system'
 export type SearchEngine = 'google' | 'bing' | 'duckduckgo' | 'brave'
 export type AiProviderId = 'openai' | 'anthropic'
 
+export interface NewsItem {
+  title: string
+  url: string
+  source: string
+}
+
 export interface Workspace {
   id: string
   name: string

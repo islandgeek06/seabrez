@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Search, Plus, X, Sparkles, FileText, LayoutGrid, MessageCircle } from 'lucide-react'
 import { useStore } from '../store'
+import { api } from '../api'
+import type { NewsItem } from '../../shared/types'
 import { WeatherWidget } from './WeatherWidget'
 
 interface Shortcut {
@@ -52,6 +54,8 @@ export function Dashboard() {
   const summarize = useStore((s) => s.summarize)
   const bookmarks = useStore((s) => s.bookmarks)
   const notes = useStore((s) => s.notes)
+  const historyList = useStore((s) => s.history)
+  const openTabs = useStore((s) => s.tabs.length)
   const displayName = useStore((s) => s.settings.displayName)
 
   const [q, setQ] = useState('')
@@ -64,9 +68,38 @@ export function Dashboard() {
   const [tasks, setTasks] = useState<Task[]>(() => loadJson('seabrez.tasks', []))
   const [taskInput, setTaskInput] = useState('')
   const [note, setNote] = useState(() => localStorage.getItem('seabrez.note') || '')
+  const [news, setNews] = useState<NewsItem[]>([])
+  const [newsState, setNewsState] = useState<'loading' | 'ok' | 'error'>('loading')
+  const [newsErr, setNewsErr] = useState('')
 
   useEffect(() => {
     void useStore.getState().loadNotes()
+    void useStore.getState().loadHistory()
+  }, [])
+
+  useEffect(() => {
+    let alive = true
+    void (async () => {
+      try {
+        const res = (await api.news.top()) as { items?: NewsItem[]; error?: string } | undefined
+        if (!alive) return
+        if (res?.items?.length) {
+          setNews(res.items)
+          setNewsState('ok')
+        } else {
+          setNewsErr(res?.error || 'Headlines are available in the desktop app.')
+          setNewsState('error')
+        }
+      } catch {
+        if (alive) {
+          setNewsErr('Could not load headlines.')
+          setNewsState('error')
+        }
+      }
+    })()
+    return () => {
+      alive = false
+    }
   }, [])
   useEffect(() => localStorage.setItem('seabrez.shortcuts', JSON.stringify(shortcuts)), [shortcuts])
   useEffect(() => localStorage.setItem('seabrez.tasks', JSON.stringify(tasks)), [tasks])
@@ -83,6 +116,24 @@ export function Dashboard() {
 
   const recentBookmarks = bookmarks.slice(0, 5)
   const recentNotes = notes.slice(0, 4)
+
+  // Daily briefing computed from the app's own real data.
+  const briefing = useMemo(() => {
+    const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? '' : 's'}`
+    const startOfDay = new Date()
+    startOfDay.setHours(0, 0, 0, 0)
+    const visitedToday = historyList.filter((h) => h.lastVisitedAt >= startOfDay.getTime()).length
+    const pending = tasks.filter((t) => !t.done).length
+    const doneCount = tasks.filter((t) => t.done).length
+    return [
+      `${plural(openTabs, 'open tab')} right now`,
+      pending > 0
+        ? `${plural(pending, 'task')} to do${doneCount ? ` · ${doneCount} done` : ''}`
+        : 'No tasks pending — add one under Tasks',
+      `${plural(bookmarks.length, 'bookmark')} saved · ${plural(notes.length, 'note')}`,
+      `${plural(visitedToday, 'page')} visited today`,
+    ]
+  }, [openTabs, tasks, bookmarks.length, notes.length, historyList])
 
   const addShortcut = (e: React.FormEvent) => {
     e.preventDefault()
@@ -181,10 +232,9 @@ export function Dashboard() {
           <section className="tile glass bento-2">
             <h3>📋 Daily briefing</h3>
             <ul className="briefing">
-              <li>3 unread priority emails</li>
-              <li>Standup at 10:00 · Design review at 14:00</li>
-              <li>2 pull requests awaiting your review</li>
-              <li>4 articles saved in your reading list</li>
+              {briefing.map((line) => (
+                <li key={line}>{line}</li>
+              ))}
             </ul>
           </section>
 
@@ -245,15 +295,35 @@ export function Dashboard() {
           </section>
 
           <section className="tile glass bento-2">
-            <h3>📰 AI news digest</h3>
-            <ul className="news">
-              <li><strong>Tech</strong> — New GPU architectures promise 2× on-device inference.</li>
-              <li><strong>Markets</strong> — Indices flat ahead of earnings season.</li>
-              <li><strong>Science</strong> — Fusion milestone reported by a research lab.</li>
-            </ul>
-            <button className="chip" onClick={() => ask('Give me a full news briefing for today')}>
-              Full briefing →
-            </button>
+            <h3>📰 Top stories</h3>
+            {newsState === 'loading' && <p className="muted small">Loading headlines…</p>}
+            {newsState === 'error' && <p className="muted small">{newsErr}</p>}
+            {newsState === 'ok' && (
+              <ul className="news">
+                {news.map((n) => (
+                  <li key={n.url}>
+                    <button className="news-link" onClick={() => navigate(n.url)} title={n.url}>
+                      <span className="news-title">{n.title}</span>
+                      {n.source && <span className="news-src">{n.source}</span>}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {newsState === 'ok' && (
+              <button
+                className="chip"
+                onClick={() =>
+                  ask(
+                    `Summarize today's top tech headlines for me:\n${news
+                      .map((n) => `- ${n.title} (${n.source})`)
+                      .join('\n')}`,
+                  )
+                }
+              >
+                Summarize with AI →
+              </button>
+            )}
           </section>
 
           <section className="tile glass">

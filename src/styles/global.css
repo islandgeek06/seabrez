@@ -2320,3 +2320,30 @@ kbd {
   border-color: var(--accent);
   transform: translateX(2px);
 }
+
+/* Real top-stories list (v0.2.4) */
+.news li {
+  padding-left: 0;
+}
+.news-link {
+  width: 100%;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  color: var(--text);
+  transition: var(--transition);
+}
+.news-link:hover {
+  background: var(--surface);
+}
+.news-title {
+  font-size: 13px;
+  line-height: 1.4;
+}
+.news-src {
+  font-size: 11px;
+  color: var(--text-faint);
+}

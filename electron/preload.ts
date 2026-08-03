@@ -100,6 +100,9 @@ const api = {
     hasKey: () => invoke('search:hasKey'),
     validate: () => invoke('search:validate'),
   },
+  news: {
+    top: () => invoke('news:top'),
+  },
   sync: {
     applyBookmarks: (rows: unknown[]) => invoke('sync:applyBookmarks', { rows }),
     applyNotes: (rows: unknown[]) => invoke('sync:applyNotes', { rows }),
