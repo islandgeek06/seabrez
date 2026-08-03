@@ -2417,12 +2417,13 @@ kbd {
 .brand-hero {
   position: fixed;
   right: 30px;
-  bottom: 24px;
+  bottom: 48px;
   z-index: 5;
   display: flex;
   align-items: center;
   gap: 14px;
   margin: 0;
+  opacity: 0.5; /* faded, true-watermark feel */
   pointer-events: none; /* decorative watermark — never blocks clicks */
 }
 .brand-mark {
