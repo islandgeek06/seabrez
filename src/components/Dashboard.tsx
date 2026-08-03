@@ -51,7 +51,6 @@ export function Dashboard() {
   const ask = useStore((s) => s.ask)
   const summarize = useStore((s) => s.summarize)
   const bookmarks = useStore((s) => s.bookmarks)
-  const historyList = useStore((s) => s.history)
   const notes = useStore((s) => s.notes)
   const displayName = useStore((s) => s.settings.displayName)
 
@@ -67,7 +66,6 @@ export function Dashboard() {
   const [note, setNote] = useState(() => localStorage.getItem('seabrez.note') || '')
 
   useEffect(() => {
-    void useStore.getState().loadHistory()
     void useStore.getState().loadNotes()
   }, [])
   useEffect(() => localStorage.setItem('seabrez.shortcuts', JSON.stringify(shortcuts)), [shortcuts])
@@ -83,7 +81,6 @@ export function Dashboard() {
     [],
   )
 
-  const frequent = [...historyList].sort((a, b) => b.visitCount - a.visitCount).slice(0, 6)
   const recentBookmarks = bookmarks.slice(0, 5)
   const recentNotes = notes.slice(0, 4)
 
@@ -236,21 +233,6 @@ export function Dashboard() {
           </section>
 
           <section className="tile glass">
-            <h3>⚡ Frequent</h3>
-            {frequent.length === 0 && <p className="muted small">Sites you visit often appear here.</p>}
-            <ul className="link-list">
-              {frequent.map((h) => (
-                <li key={h.id}>
-                  <button onClick={() => navigate(h.url)} title={h.url}>
-                    {h.favicon ? <img src={h.favicon} alt="" className="ll-fav" /> : <span className="ll-fav">◦</span>}
-                    {h.title || hostOf(h.url)}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </section>
-
-          <section className="tile glass">
             <h3>★ Bookmarks</h3>
             {recentBookmarks.length === 0 && <p className="muted small">Ctrl+D to bookmark a page.</p>}
             <ul className="link-list">
@@ -288,10 +270,18 @@ export function Dashboard() {
 
           <section className="tile glass">
             <h3><Sparkles size={14} /> Recommendations</h3>
-            <ul className="briefing">
-              <li>Group your research tabs into a workspace?</li>
-              <li>Sleep background tabs to save memory.</li>
-              <li>Turn “WebGPU” tabs into a reading list.</li>
+            <ul className="reco-list">
+              {[
+                'Group your research tabs into a workspace?',
+                'Sleep background tabs to save memory.',
+                'Turn my open tabs into a reading list.',
+              ].map((r) => (
+                <li key={r}>
+                  <button onClick={() => ask(r)}>
+                    <Sparkles size={13} /> {r}
+                  </button>
+                </li>
+              ))}
             </ul>
           </section>
         </div>

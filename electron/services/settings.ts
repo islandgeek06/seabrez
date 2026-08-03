@@ -9,7 +9,7 @@ export const DEFAULT_SETTINGS: Settings = {
   displayName: '',
   searchEngine: 'google',
   homePage: 'intelleson://newtab',
-  restoreSession: true,
+  restoreSession: false,
   askWhereToSave: false,
   downloadDir: null,
   compactTabs: false,

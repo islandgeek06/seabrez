@@ -2269,3 +2269,54 @@ kbd {
 .tabstrip .tab.pinned {
   flex: 0 0 44px;
 }
+
+/* Home tile spacing refinements (v0.2.3) */
+.qa-list {
+  gap: 10px;
+}
+.news {
+  gap: 12px;
+}
+/* Breathing room before the "Full briefing →" chip in the news digest */
+.news + .chip {
+  margin-top: 14px;
+  align-self: flex-start;
+}
+/* More comfortable side padding for Bookmarks / link tiles */
+.link-list button {
+  padding: 9px 12px;
+}
+/* Clickable Recommendations */
+.reco-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.reco-list button {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 9px 11px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 13px;
+  line-height: 1.45;
+  text-align: left;
+  transition: var(--transition);
+}
+.reco-list button svg {
+  flex: 0 0 auto;
+  margin-top: 1px;
+  color: var(--accent);
+}
+.reco-list button:hover {
+  color: var(--text);
+  border-color: var(--accent);
+  transform: translateX(2px);
+}
