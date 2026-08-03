@@ -85,6 +85,11 @@ export class TabManager {
     this.emit('tabs:updated', this.snapshot(t))
   }
 
+  /** Current tabs + active id, for the renderer to sync on init (no event race). */
+  getSnapshot() {
+    return { tabs: this.tabs.map((t) => this.snapshot(t)), activeId: this.activeId }
+  }
+
   // ---- lifecycle -------------------------------------------------------
   createTab(opts: {
     url?: string
@@ -198,10 +203,8 @@ export class TabManager {
     if (target != null) {
       this.setActive(target)
     } else {
-      // No tabs in this workspace → hide any open page so the renderer shows home.
-      this.webVisible = false
-      this.layout()
-      this.emit('tabs:activated', { id: null })
+      // No tabs in this workspace → open a fresh home tab so there's always one.
+      this.createTab({ workspaceId })
     }
   }
 
@@ -215,6 +218,12 @@ export class TabManager {
     this.win.contentView.removeChildView(tab.view)
     ;(tab.view.webContents as unknown as { close?: () => void }).close?.()
     this.tabs.splice(idx, 1)
+    // Always keep at least one tab (the home/new-tab page), like Chrome.
+    if (this.tabs.length === 0) {
+      this.activeId = null
+      this.createTab({ workspaceId: this.currentWorkspaceId })
+      return
+    }
     if (this.activeId === id) {
       const next = this.tabs[idx] ?? this.tabs[idx - 1]
       this.activeId = next?.id ?? null

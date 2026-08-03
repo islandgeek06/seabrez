@@ -104,7 +104,9 @@ export class WindowManager {
         this.restoredOnce = true
         restored = tabs.restoreSession()
       }
-      if (!restored) tabs.setWebVisible(false)
+      // Always start with a tab (the home/new-tab page) so the strip is never
+      // empty and the "+" isn't sitting alone.
+      if (!restored) tabs.createTab({})
       emit('app:ready', { settings, isPrivate })
     })
 

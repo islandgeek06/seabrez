@@ -2260,3 +2260,12 @@ kbd {
   padding-top: 10px;
   border-top: 1px solid var(--border);
 }
+
+/* Even, Chrome-like tab widths (share space equally, shrink together) */
+.tabstrip .tab {
+  flex: 1 1 0;
+  min-width: 44px;
+}
+.tabstrip .tab.pinned {
+  flex: 0 0 44px;
+}

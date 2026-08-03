@@ -72,6 +72,7 @@ export function registerIpc(ctx: IpcContext) {
   })
 
   // ---- tabs ----
+  handle('tabs:get', null, (_a, e) => tabsFor(e)?.getSnapshot() ?? { tabs: [], activeId: null })
   handle('tabs:create', S.tabCreate, (o, e) => tabsFor(e)?.createTab(o))
   handle('tabs:close', S.tabId, ({ id }, e) => withTabs(e, (t) => t.closeTab(id)))
   handle('tabs:activate', S.tabId, ({ id }, e) => withTabs(e, (t) => t.setActive(id)))

@@ -313,6 +313,16 @@ export const useStore = create<State>((set, get) => ({
       const { isPrivate } = (p as { isPrivate?: boolean }) ?? {}
       if (isPrivate) set({ isPrivateWindow: true })
     })
+
+    // Sync current tabs directly (covers tabs created before we subscribed).
+    const snap = (await api.tabs.get()) as { tabs: LiveTab[]; activeId: number | null } | undefined
+    if (snap && snap.tabs.length) {
+      set({ tabs: snap.tabs, activeTabId: snap.activeId })
+      const active = snap.tabs.find((t) => t.id === snap.activeId)
+      const blank = isBlankUrl(active?.url)
+      set({ surface: blank ? 'newtab' : 'web' })
+      api.view.setWebVisible(!blank)
+    }
   },
 
   setSurface(s) {

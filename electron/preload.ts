@@ -19,6 +19,7 @@ const api = {
     remove: (id: string) => invoke('workspaces:remove', id),
   },
   tabs: {
+    get: () => invoke('tabs:get'),
     create: (o: unknown = {}) => invoke('tabs:create', o),
     close: (id: number) => invoke('tabs:close', { id }),
     activate: (id: number) => invoke('tabs:activate', { id }),
