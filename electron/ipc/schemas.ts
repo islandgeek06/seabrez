@@ -34,6 +34,7 @@ export const S = {
   tabReorder: z.object({ id: z.number().int(), toIndex: z.number().int() }),
   tabBool: z.object({ id: z.number().int(), value: z.boolean() }),
   tabMoveWorkspace: z.object({ id: z.number().int(), workspaceId: z.string().nullable() }),
+  tabWorkspace: z.object({ workspaceId: z.string().min(1) }),
 
   navLoad: z.object({ url: z.string().max(4096) }),
 

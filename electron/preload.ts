@@ -29,6 +29,7 @@ const api = {
     reorder: (id: number, toIndex: number) => invoke('tabs:reorder', { id, toIndex }),
     moveToWorkspace: (id: number, workspaceId: string | null) =>
       invoke('tabs:moveToWorkspace', { id, workspaceId }),
+    setWorkspace: (workspaceId: string) => invoke('tabs:setWorkspace', { workspaceId }),
   },
   nav: {
     load: (url: string) => invoke('nav:load', { url }),

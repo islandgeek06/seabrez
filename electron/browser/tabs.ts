@@ -39,6 +39,8 @@ export class TabManager {
   private closedStack: { url: string; workspaceId: string | null }[] = []
   private defaultPrivate: boolean
   private privatePartition: string
+  private currentWorkspaceId: string | null = null
+  private activeByWorkspace = new Map<string, number>()
 
   constructor(win: BrowserWindow, emit: Emit, opts: TabManagerOptions = {}) {
     this.win = win
@@ -112,7 +114,7 @@ export class TabManager {
       canGoForward: false,
       pinned: false,
       muted: false,
-      workspaceId: opts.workspaceId ?? null,
+      workspaceId: opts.workspaceId ?? this.currentWorkspaceId ?? null,
       isPrivate,
     }
     this.tabs.push(tab)
@@ -172,11 +174,35 @@ export class TabManager {
   }
 
   setActive(id: number) {
-    if (!this.tabs.some((t) => t.id === id)) return
+    const tab = this.tabs.find((t) => t.id === id)
+    if (!tab) return
     this.activeId = id
     this.webVisible = true
+    if (tab.workspaceId) {
+      this.currentWorkspaceId = tab.workspaceId
+      this.activeByWorkspace.set(tab.workspaceId, id)
+    }
     this.layout()
     this.emit('tabs:activated', { id })
+  }
+
+  // Switch the active browsing context to a workspace: show that workspace's
+  // last-active tab (or its first), or hide the web view (→ home) if it has none.
+  setActiveWorkspace(workspaceId: string) {
+    this.currentWorkspaceId = workspaceId
+    const remembered = this.activeByWorkspace.get(workspaceId)
+    const target =
+      remembered != null && this.tabs.some((t) => t.id === remembered && t.workspaceId === workspaceId)
+        ? remembered
+        : this.tabs.find((t) => t.workspaceId === workspaceId)?.id
+    if (target != null) {
+      this.setActive(target)
+    } else {
+      // No tabs in this workspace → hide any open page so the renderer shows home.
+      this.webVisible = false
+      this.layout()
+      this.emit('tabs:activated', { id: null })
+    }
   }
 
   closeTab(id: number) {

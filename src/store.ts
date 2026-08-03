@@ -283,7 +283,13 @@ export const useStore = create<State>((set, get) => ({
       }
     })
     api.on('tabs:activated', (p) => {
-      const { id } = p as { id: number }
+      const { id } = p as { id: number | null }
+      if (id == null) {
+        // Switched to a workspace with no tabs → show home.
+        set({ activeTabId: null, surface: 'newtab' })
+        api.view.setWebVisible(false)
+        return
+      }
       const blank = isBlankUrl(get().tabs.find((t) => t.id === id)?.url)
       set({ activeTabId: id, surface: blank ? 'newtab' : 'web' })
       api.view.setWebVisible(!blank)
@@ -326,6 +332,9 @@ export const useStore = create<State>((set, get) => ({
     set({ activeWorkspaceId: id })
     const ws = get().workspaces.find((w) => w.id === id)
     if (ws) void get().setSetting('accent', ws.color)
+    // Switch the visible tab set to this workspace (main picks its active tab,
+    // or emits a null activation → home if the workspace has no tabs).
+    api.tabs.setWorkspace(id)
   },
   async createWorkspace(w) {
     await api.workspaces.create(w)

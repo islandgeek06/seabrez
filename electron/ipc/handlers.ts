@@ -83,6 +83,9 @@ export function registerIpc(ctx: IpcContext) {
   handle('tabs:moveToWorkspace', S.tabMoveWorkspace, ({ id, workspaceId }, e) =>
     withTabs(e, (t) => t.moveToWorkspace(id, workspaceId)),
   )
+  handle('tabs:setWorkspace', S.tabWorkspace, ({ workspaceId }, e) =>
+    withTabs(e, (t) => t.setActiveWorkspace(workspaceId)),
+  )
 
   // ---- navigation ----
   handle('nav:load', S.navLoad, ({ url }, e) => withTabs(e, (t) => t.load(url)))

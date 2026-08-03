@@ -2178,3 +2178,21 @@ kbd {
   border-color: var(--accent);
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 26%, transparent), var(--shadow);
 }
+
+/* Active-workspace chip at the start of the tab strip */
+.ws-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex: 0 0 auto;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 10px;
+  margin-right: 6px;
+  border-radius: 999px;
+  color: var(--text);
+  background: color-mix(in srgb, var(--ws-accent) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ws-accent) 38%, var(--border));
+  white-space: nowrap;
+  -webkit-app-region: no-drag;
+}

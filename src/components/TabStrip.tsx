@@ -5,23 +5,36 @@ import { api } from '../api'
 import type { LiveTab } from '../../shared/types'
 
 export function TabStrip() {
-  const tabs = useStore((s) => s.tabs)
+  const allTabs = useStore((s) => s.tabs)
   const activeTabId = useStore((s) => s.activeTabId)
   const activateTab = useStore((s) => s.activateTab)
   const closeTab = useStore((s) => s.closeTab)
   const newTab = useStore((s) => s.newTab)
+  const workspaces = useStore((s) => s.workspaces)
+  const activeWorkspaceId = useStore((s) => s.activeWorkspaceId)
   const [menu, setMenu] = useState<{ id: number; x: number; y: number } | null>(null)
   const [dragId, setDragId] = useState<number | null>(null)
 
+  // Show only the active workspace's tabs (private windows have no workspace).
+  const tabs = allTabs.filter(
+    (t) => t.isPrivate || t.workspaceId == null || t.workspaceId === activeWorkspaceId,
+  )
+  const activeWs = workspaces.find((w) => w.id === activeWorkspaceId)
+
   const onDrop = (targetId: number) => {
     if (dragId == null || dragId === targetId) return
-    const toIndex = tabs.findIndex((t) => t.id === targetId)
+    const toIndex = allTabs.findIndex((t) => t.id === targetId)
     api.tabs.reorder(dragId, toIndex)
     setDragId(null)
   }
 
   return (
     <div className="tabstrip" role="tablist">
+      {activeWs && (
+        <span className="ws-chip" title={`Workspace: ${activeWs.name}`} style={{ ['--ws-accent' as string]: activeWs.color }}>
+          {activeWs.icon} {activeWs.name}
+        </span>
+      )}
       {tabs.map((t: LiveTab) => (
         <div
           key={t.id}
