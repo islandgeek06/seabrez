@@ -14,6 +14,7 @@ import {
 import { useStore } from '../store'
 import { api } from '../api'
 import { isProbablyUrl } from '../../shared/url'
+import { AppMenu } from './AppMenu'
 
 interface Suggestion {
   label: string
@@ -182,6 +183,7 @@ export function TopBar() {
         <button className="nav-btn accent" title="AI Assistant (Ctrl+Shift+A)" aria-label="AI Assistant" onClick={() => useStore.getState().toggleAssistant()}>
           <Sparkles size={18} />
         </button>
+        <AppMenu />
       </div>
     </div>
   )

@@ -219,8 +219,12 @@ export function registerIpc(ctx: IpcContext) {
     else w?.maximize()
   })
   handle('window:close', null, (_a, e) => BrowserWindow.fromWebContents(e.sender)?.close())
-  handle('window:new', null, () => windows.createWindow({ isPrivate: false }))
-  handle('window:newPrivate', null, () => windows.createWindow({ isPrivate: true }))
+  handle('window:new', null, () => {
+    windows.createWindow({ isPrivate: false })
+  })
+  handle('window:newPrivate', null, () => {
+    windows.createWindow({ isPrivate: true })
+  })
 
   // ---- app / misc ----
   handle('app:version', null, () => app.getVersion())
