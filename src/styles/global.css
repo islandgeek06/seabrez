@@ -2415,16 +2415,20 @@ kbd {
 
 /* Bold brand lockup on the home page (v0.2.7) */
 .brand-hero {
+  position: fixed;
+  right: 30px;
+  bottom: 24px;
+  z-index: 5;
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 14px;
-  margin: 4px 0 26px;
+  margin: 0;
+  pointer-events: none; /* decorative watermark — never blocks clicks */
 }
 .brand-mark {
-  width: 52px;
-  height: 52px;
-  border-radius: 15px;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
   background: linear-gradient(135deg, #22d3ee, #3b82f6 55%, #6d5efc);
   color: #fff;
   display: grid;
@@ -2432,7 +2436,7 @@ kbd {
   box-shadow: 0 8px 24px rgba(59, 130, 246, 0.42);
 }
 .brand-name {
-  font-size: 34px;
+  font-size: 42px;
   font-weight: 800;
   letter-spacing: -0.02em;
   background: linear-gradient(120deg, #22d3ee, #3b82f6 45%, #6d5efc);
