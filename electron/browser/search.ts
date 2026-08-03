@@ -124,31 +124,39 @@ export async function webSearch(
 }
 
 // --- Top stories (no key) -------------------------------------------------
-// Real, keyless news from the Hacker News front page (Algolia API). Requests
-// go through Electron's net stack, so no CORS/proxy issues.
+// Real, keyless general world news from the Google News RSS top-stories feed.
+// Requests go through Electron's net stack, so no CORS/proxy issues.
+const NEWS_FEED = 'https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en'
+
 export async function topStories(): Promise<{ items?: NewsItem[]; error?: string }> {
   try {
-    const res = await fetchTimeout(
-      'https://hn.algolia.com/api/v1/search?tags=front_page&hitsPerPage=10',
-      { headers: { Accept: 'application/json' } },
-    )
+    const res = await fetchTimeout(NEWS_FEED, {
+      headers: {
+        Accept: 'application/rss+xml, application/xml, text/xml',
+        'user-agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
+      },
+    })
     if (!res.ok) return { error: `News error (HTTP ${res.status}).` }
-    const data = (await res.json()) as {
-      hits?: { title?: string; url?: string; objectID?: string }[]
+    const xml = await res.text()
+
+    const items: NewsItem[] = []
+    const itemRe = /<item>([\s\S]*?)<\/item>/g
+    let m: RegExpExecArray | null
+    while ((m = itemRe.exec(xml)) && items.length < 6) {
+      const block = m[1]
+      const rawTitle = block.match(/<title>([\s\S]*?)<\/title>/)?.[1] ?? ''
+      const link = (block.match(/<link>([\s\S]*?)<\/link>/)?.[1] ?? '').trim()
+      const source = decodeHtml(stripTags(block.match(/<source[^>]*>([\s\S]*?)<\/source>/)?.[1] ?? '')).trim()
+      let title = decodeHtml(stripTags(rawTitle)).trim()
+      // Google News appends " - Publisher" to titles; drop it when redundant.
+      if (source && title.endsWith(` - ${source}`)) {
+        title = title.slice(0, -(source.length + 3)).trim()
+      }
+      if (title && /^https?:\/\//.test(link)) {
+        items.push({ title, url: link, source })
+      }
     }
-    const items: NewsItem[] = (data.hits ?? [])
-      .map((h) => {
-        const url = h.url || `https://news.ycombinator.com/item?id=${h.objectID}`
-        let source = ''
-        try {
-          source = new URL(url).hostname.replace(/^www\./, '')
-        } catch {
-          source = ''
-        }
-        return { title: stripTags(decodeHtml(h.title ?? '')), url, source }
-      })
-      .filter((i) => i.title && /^https?:\/\//.test(i.url))
-      .slice(0, 6)
     if (items.length === 0) return { error: 'No stories right now.' }
     return { items }
   } catch (e) {

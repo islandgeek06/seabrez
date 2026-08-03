@@ -295,7 +295,7 @@ export function Dashboard() {
           </section>
 
           <section className="tile glass bento-2">
-            <h3>📰 Top stories</h3>
+            <h3>📰 World news</h3>
             {newsState === 'loading' && <p className="muted small">Loading headlines…</p>}
             {newsState === 'error' && <p className="muted small">{newsErr}</p>}
             {newsState === 'ok' && (
@@ -315,7 +315,7 @@ export function Dashboard() {
                 className="chip"
                 onClick={() =>
                   ask(
-                    `Summarize today's top tech headlines for me:\n${news
+                    `Summarize today's top news headlines for me:\n${news
                       .map((n) => `- ${n.title} (${n.source})`)
                       .join('\n')}`,
                   )
