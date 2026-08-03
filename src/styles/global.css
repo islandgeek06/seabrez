@@ -2325,6 +2325,11 @@ kbd {
 .news li {
   padding-left: 0;
 }
+/* Keep the World news tile tidy: scroll when there are many headlines */
+.news {
+  max-height: 300px;
+  overflow-y: auto;
+}
 .news-link {
   width: 100%;
   text-align: left;

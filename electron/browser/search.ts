@@ -143,7 +143,7 @@ export async function topStories(): Promise<{ items?: NewsItem[]; error?: string
     const items: NewsItem[] = []
     const itemRe = /<item>([\s\S]*?)<\/item>/g
     let m: RegExpExecArray | null
-    while ((m = itemRe.exec(xml)) && items.length < 6) {
+    while ((m = itemRe.exec(xml)) && items.length < 12) {
       const block = m[1]
       const rawTitle = block.match(/<title>([\s\S]*?)<\/title>/)?.[1] ?? ''
       const link = (block.match(/<link>([\s\S]*?)<\/link>/)?.[1] ?? '').trim()
