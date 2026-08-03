@@ -1,11 +1,17 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Search, Plus, X } from 'lucide-react'
+import { Search, Plus, X, Sparkles, FileText, LayoutGrid, MessageCircle } from 'lucide-react'
 import { useStore } from '../store'
+import { WeatherWidget } from './WeatherWidget'
 
 interface Shortcut {
   id: string
   name: string
   url: string
+}
+interface Task {
+  id: string
+  text: string
+  done: boolean
 }
 
 const DEFAULT_SHORTCUTS: Shortcut[] = [
@@ -14,7 +20,6 @@ const DEFAULT_SHORTCUTS: Shortcut[] = [
   { id: 's3', name: 'Wikipedia', url: 'https://wikipedia.org' },
   { id: 's4', name: 'GitHub', url: 'https://github.com' },
 ]
-
 const TILE_COLORS = ['#22d3ee', '#3b82f6', '#6d5efc', '#ec4899', '#f59e0b', '#22c55e', '#06b6d4']
 
 function hostOf(url: string): string {
@@ -32,34 +37,57 @@ function colorFor(seed: string): string {
   for (const c of seed) h = (h * 31 + c.charCodeAt(0)) >>> 0
   return TILE_COLORS[h % TILE_COLORS.length]
 }
+function loadJson<T>(key: string, fallback: T): T {
+  try {
+    const raw = localStorage.getItem(key)
+    return raw ? (JSON.parse(raw) as T) : fallback
+  } catch {
+    return fallback
+  }
+}
 
 export function Dashboard() {
   const navigate = useStore((s) => s.navigate)
+  const ask = useStore((s) => s.ask)
+  const summarize = useStore((s) => s.summarize)
+  const bookmarks = useStore((s) => s.bookmarks)
+  const historyList = useStore((s) => s.history)
+  const notes = useStore((s) => s.notes)
   const workspaces = useStore((s) => s.workspaces)
   const activeWs = useStore((s) => s.activeWorkspaceId)
   const ws = workspaces.find((w) => w.id === activeWs)
 
   const [q, setQ] = useState('')
-  const [shortcuts, setShortcuts] = useState<Shortcut[]>(() => {
-    try {
-      const raw = localStorage.getItem('seabrez.shortcuts')
-      return raw ? JSON.parse(raw) : DEFAULT_SHORTCUTS
-    } catch {
-      return DEFAULT_SHORTCUTS
-    }
-  })
+  const [shortcuts, setShortcuts] = useState<Shortcut[]>(() =>
+    loadJson('seabrez.shortcuts', DEFAULT_SHORTCUTS),
+  )
   const [adding, setAdding] = useState(false)
   const [newUrl, setNewUrl] = useState('')
   const [newName, setNewName] = useState('')
+  const [tasks, setTasks] = useState<Task[]>(() => loadJson('seabrez.tasks', []))
+  const [taskInput, setTaskInput] = useState('')
+  const [note, setNote] = useState(() => localStorage.getItem('seabrez.note') || '')
 
   useEffect(() => {
-    localStorage.setItem('seabrez.shortcuts', JSON.stringify(shortcuts))
-  }, [shortcuts])
+    void useStore.getState().loadHistory()
+    void useStore.getState().loadNotes()
+  }, [])
+  useEffect(() => localStorage.setItem('seabrez.shortcuts', JSON.stringify(shortcuts)), [shortcuts])
+  useEffect(() => localStorage.setItem('seabrez.tasks', JSON.stringify(tasks)), [tasks])
+  useEffect(() => localStorage.setItem('seabrez.note', note), [note])
 
   const greeting = useMemo(() => {
     const h = new Date().getHours()
     return h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening'
   }, [])
+  const dateStr = useMemo(
+    () => new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' }),
+    [],
+  )
+
+  const frequent = [...historyList].sort((a, b) => b.visitCount - a.visitCount).slice(0, 6)
+  const recentBookmarks = bookmarks.slice(0, 5)
+  const recentNotes = notes.slice(0, 4)
 
   const addShortcut = (e: React.FormEvent) => {
     e.preventDefault()
@@ -74,20 +102,32 @@ export function Dashboard() {
     setNewName('')
     setAdding(false)
   }
+  const addTask = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!taskInput.trim()) return
+    setTasks((t) => [...t, { id: Math.random().toString(36).slice(2), text: taskInput, done: false }])
+    setTaskInput('')
+  }
+
+  const quickActions = [
+    { icon: Search, label: 'Start research', run: () => ask('Help me start researching a topic. Ask me what to research.') },
+    { icon: FileText, label: 'Summarize page', run: () => void summarize() },
+    { icon: MessageCircle, label: 'Draft something', run: () => ask('Help me draft a message or document.') },
+    { icon: LayoutGrid, label: 'Organize tabs', run: () => ask('Suggest how to group my open tabs into workspaces.') },
+  ]
 
   return (
     <div className="home">
       <div className="home-inner">
-        <header className="home-head">
-          <h1>{greeting}</h1>
-          {ws && (
-            <span className="home-ws">
-              {ws.icon} {ws.name}
-            </span>
-          )}
+        <header className="home-top">
+          <div>
+            <h1>{greeting}{ws && <span className="home-ws"> · {ws.icon} {ws.name}</span>}</h1>
+            <p className="home-date">{dateStr}</p>
+          </div>
+          <WeatherWidget />
         </header>
 
-        {/* Single search — routes URLs to the page, everything else to AI search */}
+        {/* Single search — URLs load, everything else goes to AI search */}
         <form
           className="home-search"
           onSubmit={(e) => {
@@ -127,7 +167,6 @@ export function Dashboard() {
               </button>
             </div>
           ))}
-
           <div className="shortcut">
             <button className="shortcut-btn" onClick={() => setAdding(true)}>
               <span className="shortcut-tile shortcut-tile-add">
@@ -137,6 +176,123 @@ export function Dashboard() {
             </button>
           </div>
         </div>
+
+        {/* Bento grid of widgets */}
+        <div className="bento">
+          <section className="tile glass bento-2">
+            <h3>📋 Daily briefing</h3>
+            <ul className="briefing">
+              <li>3 unread priority emails</li>
+              <li>Standup at 10:00 · Design review at 14:00</li>
+              <li>2 pull requests awaiting your review</li>
+              <li>4 articles saved in your reading list</li>
+            </ul>
+          </section>
+
+          <section className="tile glass bento-tall">
+            <h3>✓ Tasks</h3>
+            <form onSubmit={addTask} className="task-add">
+              <input value={taskInput} onChange={(e) => setTaskInput(e.target.value)} placeholder="Add a task…" />
+            </form>
+            <ul className="tasks">
+              {tasks.length === 0 && <li className="muted small">Nothing yet — add one above.</li>}
+              {tasks.map((t) => (
+                <li key={t.id} className={t.done ? 'done' : ''}>
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={t.done}
+                      onChange={() => setTasks((all) => all.map((x) => (x.id === t.id ? { ...x, done: !x.done } : x)))}
+                    />
+                    {t.text}
+                  </label>
+                  <button className="task-del" onClick={() => setTasks((all) => all.filter((x) => x.id !== t.id))}>
+                    <X size={13} />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <section className="tile glass">
+            <h3>📝 Quick note</h3>
+            <textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="Jot something… (auto-saved)" />
+          </section>
+
+          <section className="tile glass">
+            <h3><Sparkles size={14} /> AI quick actions</h3>
+            <div className="qa-list">
+              {quickActions.map((a) => {
+                const Icon = a.icon
+                return (
+                  <button key={a.label} className="qa-btn" onClick={a.run}>
+                    <Icon size={15} /> {a.label}
+                  </button>
+                )
+              })}
+            </div>
+          </section>
+
+          <section className="tile glass">
+            <h3>⚡ Frequent</h3>
+            {frequent.length === 0 && <p className="muted small">Sites you visit often appear here.</p>}
+            <ul className="link-list">
+              {frequent.map((h) => (
+                <li key={h.id}>
+                  <button onClick={() => navigate(h.url)} title={h.url}>
+                    {h.favicon ? <img src={h.favicon} alt="" className="ll-fav" /> : <span className="ll-fav">◦</span>}
+                    {h.title || hostOf(h.url)}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <section className="tile glass">
+            <h3>★ Bookmarks</h3>
+            {recentBookmarks.length === 0 && <p className="muted small">Ctrl+D to bookmark a page.</p>}
+            <ul className="link-list">
+              {recentBookmarks.map((b) => (
+                <li key={b.id}>
+                  <button onClick={() => navigate(b.url)}>★ {b.title}</button>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <section className="tile glass bento-2">
+            <h3>📰 AI news digest</h3>
+            <ul className="news">
+              <li><strong>Tech</strong> — New GPU architectures promise 2× on-device inference.</li>
+              <li><strong>Markets</strong> — Indices flat ahead of earnings season.</li>
+              <li><strong>Science</strong> — Fusion milestone reported by a research lab.</li>
+            </ul>
+            <button className="chip" onClick={() => ask('Give me a full news briefing for today')}>
+              Full briefing →
+            </button>
+          </section>
+
+          <section className="tile glass">
+            <h3>📓 Recent notes</h3>
+            {recentNotes.length === 0 && <p className="muted small">Notes you save appear here.</p>}
+            <ul className="link-list">
+              {recentNotes.map((n) => (
+                <li key={n.id}>
+                  <button onClick={() => useStore.getState().setSurface('notes')}>📝 {n.title || 'Untitled'}</button>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <section className="tile glass">
+            <h3><Sparkles size={14} /> Recommendations</h3>
+            <ul className="briefing">
+              <li>Group your research tabs into a workspace?</li>
+              <li>Sleep background tabs to save memory.</li>
+              <li>Turn “WebGPU” tabs into a reading list.</li>
+            </ul>
+          </section>
+        </div>
       </div>
 
       {adding && (
@@ -145,24 +301,15 @@ export function Dashboard() {
             <h3>Add shortcut</h3>
             <label>
               Website URL
-              <input
-                autoFocus
-                value={newUrl}
-                onChange={(e) => setNewUrl(e.target.value)}
-                placeholder="example.com"
-              />
+              <input autoFocus value={newUrl} onChange={(e) => setNewUrl(e.target.value)} placeholder="example.com" />
             </label>
             <label>
               Name <span className="muted">(optional)</span>
               <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Example" />
             </label>
             <div className="add-actions">
-              <button type="button" className="btn" onClick={() => setAdding(false)}>
-                Cancel
-              </button>
-              <button type="submit" className="btn primary" disabled={!newUrl.trim()}>
-                Add
-              </button>
+              <button type="button" className="btn" onClick={() => setAdding(false)}>Cancel</button>
+              <button type="submit" className="btn primary" disabled={!newUrl.trim()}>Add</button>
             </div>
           </form>
         </div>
