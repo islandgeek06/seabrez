@@ -119,8 +119,10 @@ export class TabManager {
     this.win.contentView.addChildView(view)
     this.wire(tab)
     if (opts.url && opts.url !== 'about:blank') view.webContents.loadURL(opts.url).catch(() => {})
-    if (!opts.background || this.activeId == null) this.setActive(id)
+    // Push the list BEFORE activating so the renderer already knows this tab
+    // (and its blank/loaded state) when it handles tabs:activated.
     this.pushList()
+    if (!opts.background || this.activeId == null) this.setActive(id)
     return id
   }
 

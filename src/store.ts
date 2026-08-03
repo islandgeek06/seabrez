@@ -58,6 +58,10 @@ interface PendingConsent {
 
 const uid = () => Math.random().toString(36).slice(2, 10)
 
+// A tab with no real page yet → show the home/new-tab dashboard, not a blank
+// native web view.
+const isBlankUrl = (u?: string | null): boolean => !u || u === 'about:blank'
+
 // Used only in the web-only preview (no main process supplies real settings).
 const FALLBACK_SETTINGS: Settings = {
   theme: 'dark',
@@ -259,16 +263,29 @@ export const useStore = create<State>((set, get) => ({
     api.on('tabs:list', (p) => {
       const { tabs, activeId } = p as { tabs: LiveTab[]; activeId: number | null }
       set({ tabs, activeTabId: activeId })
+      // Last tab closed while viewing a page → fall back to the home dashboard.
+      if (activeId == null && get().surface === 'web') {
+        set({ surface: 'newtab' })
+        api.view.setWebVisible(false)
+      }
     })
     api.on('tabs:updated', (p) => {
       const t = p as LiveTab
       set((s) => ({ tabs: s.tabs.map((x) => (x.id === t.id ? { ...x, ...t } : x)) }))
-      if (t.id === get().activeTabId) void get().refreshBookmarkState()
+      if (t.id === get().activeTabId) {
+        void get().refreshBookmarkState()
+        // A new/blank tab that just loaded a real page → swap home for the page.
+        if (!isBlankUrl(t.url) && get().surface === 'newtab') {
+          set({ surface: 'web' })
+          api.view.setWebVisible(true)
+        }
+      }
     })
     api.on('tabs:activated', (p) => {
       const { id } = p as { id: number }
-      set({ activeTabId: id, surface: 'web' })
-      api.view.setWebVisible(true)
+      const blank = isBlankUrl(get().tabs.find((t) => t.id === id)?.url)
+      set({ activeTabId: id, surface: blank ? 'newtab' : 'web' })
+      api.view.setWebVisible(!blank)
       void get().refreshBookmarkState()
     })
     api.on('downloads:updated', (p) => {
@@ -316,16 +333,18 @@ export const useStore = create<State>((set, get) => ({
 
   async newTab(url, opts) {
     await api.tabs.create({ url, workspaceId: get().activeWorkspaceId, ...opts })
-    set({ surface: 'web' })
-    api.view.setWebVisible(true)
+    const blank = isBlankUrl(url)
+    set({ surface: blank ? 'newtab' : 'web' })
+    api.view.setWebVisible(!blank)
   },
   closeTab(id) {
     api.tabs.close(id)
   },
   activateTab(id) {
     api.tabs.activate(id)
-    set({ surface: 'web' })
-    api.view.setWebVisible(true)
+    const blank = isBlankUrl(get().tabs.find((t) => t.id === id)?.url)
+    set({ surface: blank ? 'newtab' : 'web' })
+    api.view.setWebVisible(!blank)
   },
   navigate(input) {
     const s = input.trim()
