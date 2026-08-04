@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { X, Pin, Volume2, VolumeX, Plus, Copy, Shield } from 'lucide-react'
 import { useStore } from '../store'
 import { api } from '../api'
+import { WsIcon } from './WorkspaceIcon'
 import type { LiveTab } from '../../shared/types'
 
 export function TabStrip() {
@@ -32,7 +33,7 @@ export function TabStrip() {
     <div className="tabstrip" role="tablist">
       {activeWs && (
         <span className="ws-chip" title={`Workspace: ${activeWs.name}`} style={{ ['--ws-accent' as string]: activeWs.color }}>
-          {activeWs.icon} {activeWs.name}
+          <WsIcon icon={activeWs.icon} size={13} /> {activeWs.name}
         </span>
       )}
       {tabs.map((t: LiveTab) => (
