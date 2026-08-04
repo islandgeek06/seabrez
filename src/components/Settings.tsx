@@ -44,6 +44,9 @@ export function Settings() {
   const [wsName, setWsName] = useState('')
   const [wsEmoji, setWsEmoji] = useState('user')
   const [wsColor, setWsColor] = useState(ACCENTS[0])
+  const update = useStore((s) => s.update)
+  const checkForUpdates = useStore((s) => s.checkForUpdates)
+  const installUpdate = useStore((s) => s.installUpdate)
 
   useEffect(() => {
     void (async () => setVersion((await api.appInfo.version()) as string))()
@@ -437,10 +440,39 @@ export function Settings() {
         <Row label="Hardware acceleration (restart to apply)">
           <input type="checkbox" checked={settings.hardwareAcceleration} onChange={(e) => upd('hardwareAcceleration', e.target.checked)} />
         </Row>
+        <Row label="Updates">
+          {update.status === 'downloaded' ? (
+            <button className="btn primary" onClick={installUpdate}>
+              Restart &amp; update{update.version ? ` to v${update.version}` : ''}
+            </button>
+          ) : (
+            <button className="btn" onClick={checkForUpdates} disabled={update.status === 'checking'}>
+              {update.status === 'checking' ? 'Checking…' : 'Check for updates'}
+            </button>
+          )}
+        </Row>
+        <p className="muted small">{updateStatusText(update)}</p>
         <p className="muted small">SeaBrez v{version || '0.1.0'} · Chromium via Electron</p>
       </section>
     </div>
   )
+}
+
+function updateStatusText(u: import('../store').UpdateState): string {
+  switch (u.status) {
+    case 'checking':
+      return 'Checking for updates…'
+    case 'available':
+      return `Downloading v${u.version ?? ''}… ${u.percent ? `${u.percent}%` : ''}`.trim()
+    case 'downloaded':
+      return `Version ${u.version ?? ''} downloaded — restart to install.`
+    case 'none':
+      return 'You’re on the latest version.'
+    case 'error':
+      return `Update check failed${u.message ? `: ${u.message}` : ''}.`
+    default:
+      return 'Updates install automatically in the background.'
+  }
 }
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {

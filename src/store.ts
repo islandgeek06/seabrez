@@ -93,6 +93,15 @@ const FALLBACK_SETTINGS: Settings = {
 let pendingAction: (() => void) | null = null
 const sessionConsented = new Set<string>()
 
+export type UpdateStatus = 'idle' | 'checking' | 'available' | 'downloaded' | 'none' | 'error'
+export interface UpdateState {
+  status: UpdateStatus
+  version: string | null
+  percent: number
+  message: string | null
+  dismissed: boolean
+}
+
 interface State {
   ready: boolean
   isPrivateWindow: boolean
@@ -137,6 +146,9 @@ interface State {
   syncBusy: boolean
   syncMessage: string | null
   lastSyncedAt: number | null
+
+  // app auto-update
+  update: UpdateState
 
   init: () => Promise<void>
   setSurface: (s: Surface) => void
@@ -205,6 +217,11 @@ interface State {
   syncSignIn: (email: string, password: string) => Promise<void>
   syncSignOut: () => Promise<void>
   syncNow: () => Promise<void>
+
+  // app auto-update
+  checkForUpdates: () => void
+  installUpdate: () => void
+  dismissUpdate: () => void
 }
 
 export const useStore = create<State>((set, get) => ({
@@ -243,6 +260,8 @@ export const useStore = create<State>((set, get) => ({
   syncBusy: false,
   syncMessage: null,
   lastSyncedAt: null,
+
+  update: { status: 'idle', version: null, percent: 0, message: null, dismissed: false },
 
   async init() {
     const [settings, workspaces, bm] = await Promise.all([
@@ -312,6 +331,24 @@ export const useStore = create<State>((set, get) => ({
     api.on('app:ready', (p) => {
       const { isPrivate } = (p as { isPrivate?: boolean }) ?? {}
       if (isPrivate) set({ isPrivateWindow: true })
+    })
+    api.on('update:status', (p) => {
+      const u = p as { state: UpdateStatus; version?: string; message?: string }
+      set((s) => ({
+        update: {
+          ...s.update,
+          status: u.state,
+          version: u.version ?? s.update.version,
+          message: u.message ?? null,
+          // Re-surface the toast whenever a fresh update appears/finishes.
+          dismissed:
+            u.state === 'available' || u.state === 'downloaded' ? false : s.update.dismissed,
+        },
+      }))
+    })
+    api.on('update:progress', (p) => {
+      const { percent } = p as { percent: number }
+      set((s) => ({ update: { ...s.update, percent } }))
     })
 
     // Sync current tabs directly (covers tabs created before we subscribed).
@@ -679,6 +716,17 @@ export const useStore = create<State>((set, get) => ({
       return
     }
     set({ isCurrentBookmarked: (await api.bookmarks.isBookmarked(tab.url)) as boolean })
+  },
+
+  checkForUpdates() {
+    set((s) => ({ update: { ...s.update, status: 'checking', message: null } }))
+    void api.update.check()
+  },
+  installUpdate() {
+    void api.update.install()
+  },
+  dismissUpdate() {
+    set((s) => ({ update: { ...s.update, dismissed: true } }))
   },
 }))
 

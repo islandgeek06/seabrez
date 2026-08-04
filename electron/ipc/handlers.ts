@@ -12,6 +12,7 @@ import {
 import { getSettings, updateSettings } from '../services/settings'
 import { hasApiKey, setApiKey } from '../security/keystore'
 import { webSearch, validateSearchKey, topStories } from '../browser/search'
+import { checkForUpdatesNow, quitAndInstall } from '../services/updater'
 import { extractPage } from '../ai/extract'
 import type { TabManager } from '../browser/tabs'
 import type { DownloadManager } from '../browser/downloads'
@@ -204,6 +205,10 @@ export function registerIpc(ctx: IpcContext) {
 
   // ---- news: real top stories (Hacker News front page, keyless) ----
   handle('news:top', null, () => topStories())
+
+  // ---- app auto-update ----
+  handle('update:check', null, () => checkForUpdatesNow())
+  handle('update:install', null, () => quitAndInstall())
 
   // ---- cloud sync: apply pulled rows into local SQLite (last-write-wins) ----
   handle('sync:applyBookmarks', S.syncBookmarks, ({ rows }) => {

@@ -103,6 +103,10 @@ const api = {
   news: {
     top: () => invoke('news:top'),
   },
+  update: {
+    check: () => invoke('update:check'),
+    install: () => invoke('update:install'),
+  },
   sync: {
     applyBookmarks: (rows: unknown[]) => invoke('sync:applyBookmarks', { rows }),
     applyNotes: (rows: unknown[]) => invoke('sync:applyNotes', { rows }),

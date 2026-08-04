@@ -8,6 +8,7 @@ import { DownloadManager } from './browser/downloads'
 import { AiService } from './ai/service'
 import { WindowManager } from './browser/window-manager'
 import { registerIpc } from './ipc/handlers'
+import { initUpdater } from './services/updater'
 import { logger } from './services/logger'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -60,6 +61,9 @@ app.whenReady().then(async () => {
   downloads.install(session.defaultSession, () => getSettings().downloadDir)
 
   registerIpc({ windows, downloads, ai })
+
+  // Background auto-updates from GitHub releases; notifies the renderer.
+  initUpdater((channel, payload) => windows?.broadcast(channel, payload))
 
   windows.createWindow({ isPrivate: false })
 

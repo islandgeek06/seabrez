@@ -9,6 +9,7 @@ import { AssistantPanel } from './components/AssistantPanel'
 import { CommandPalette } from './components/CommandPalette'
 import { ComparePicker } from './components/ComparePicker'
 import { FindBar } from './components/FindBar'
+import { UpdateToast } from './components/UpdateToast'
 import { Logo } from './components/Logo'
 
 export default function App() {
@@ -104,6 +105,7 @@ export default function App() {
       {assistantOpen && <AssistantPanel />}
       <CommandPalette />
       <ComparePicker />
+      <UpdateToast />
     </div>
   )
 }

@@ -19,7 +19,7 @@ export default defineConfig(({ command }) => {
             vite: {
               build: {
                 outDir: 'dist-electron',
-                rollupOptions: { external: ['electron', 'sql.js'] },
+                rollupOptions: { external: ['electron', 'sql.js', 'electron-updater'] },
               },
             },
           },
