@@ -7,9 +7,24 @@ import { logger } from './logger'
 const { autoUpdater } = electronUpdater
 
 type Broadcast = (channel: string, payload: unknown) => void
+type UpdateState = { state: string; version: string | null; message?: string }
 
 let broadcast: Broadcast = () => {}
 let initialized = false
+
+// Remember the latest status so a newly-opened window can sync it (an update may
+// have been downloaded before the renderer subscribed, or on a prior launch).
+let last: UpdateState = { state: 'idle', version: null }
+
+function push(state: string, extra: { version?: string; message?: string } = {}) {
+  last = { state, version: extra.version ?? last.version, message: extra.message }
+  logger.info('updater', state, last.version ?? '', extra.message ?? '')
+  broadcast('update:status', { state, version: last.version, message: extra.message })
+}
+
+export function getUpdateState(): UpdateState {
+  return last
+}
 
 // Wire the GitHub-releases auto-updater. Updates are downloaded automatically in
 // the background; the renderer is told when one is available/downloaded so it
@@ -26,21 +41,17 @@ export function initUpdater(bc: Broadcast) {
   autoUpdater.autoDownload = true
   autoUpdater.autoInstallOnAppQuit = true
 
-  autoUpdater.on('checking-for-update', () => broadcast('update:status', { state: 'checking' }))
-  autoUpdater.on('update-available', (info) =>
-    broadcast('update:status', { state: 'available', version: info.version }),
-  )
-  autoUpdater.on('update-not-available', () => broadcast('update:status', { state: 'none' }))
+  autoUpdater.on('checking-for-update', () => push('checking'))
+  autoUpdater.on('update-available', (info) => push('available', { version: info.version }))
+  autoUpdater.on('update-not-available', () => push('none'))
   autoUpdater.on('download-progress', (p) =>
     broadcast('update:progress', { percent: Math.round(p.percent) }),
   )
-  autoUpdater.on('update-downloaded', (info) =>
-    broadcast('update:status', { state: 'downloaded', version: info.version }),
-  )
+  autoUpdater.on('update-downloaded', (info) => push('downloaded', { version: info.version }))
   autoUpdater.on('error', (err) => {
     const message = err?.message ?? String(err)
     logger.error('updater', message)
-    broadcast('update:status', { state: 'error', message })
+    push('error', { message })
   })
 
   // Check shortly after launch, then every 3 hours.

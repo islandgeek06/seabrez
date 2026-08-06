@@ -104,6 +104,7 @@ const api = {
     top: () => invoke('news:top'),
   },
   update: {
+    get: () => invoke('update:get'),
     check: () => invoke('update:check'),
     install: () => invoke('update:install'),
   },

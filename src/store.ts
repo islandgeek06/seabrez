@@ -351,6 +351,22 @@ export const useStore = create<State>((set, get) => ({
       set((s) => ({ update: { ...s.update, percent } }))
     })
 
+    // Sync current update status (an update may have downloaded before this
+    // window subscribed, or on a previous launch — re-surface the toast).
+    const us = (await api.update.get()) as
+      | { state: UpdateStatus; version?: string; message?: string }
+      | undefined
+    if (us && us.state && us.state !== 'idle') {
+      set((s) => ({
+        update: {
+          ...s.update,
+          status: us.state,
+          version: us.version ?? s.update.version,
+          message: us.message ?? null,
+        },
+      }))
+    }
+
     // Sync current tabs directly (covers tabs created before we subscribed).
     const snap = (await api.tabs.get()) as { tabs: LiveTab[]; activeId: number | null } | undefined
     if (snap && snap.tabs.length) {

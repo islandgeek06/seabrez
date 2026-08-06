@@ -12,7 +12,7 @@ import {
 import { getSettings, updateSettings } from '../services/settings'
 import { hasApiKey, setApiKey } from '../security/keystore'
 import { webSearch, validateSearchKey, topStories } from '../browser/search'
-import { checkForUpdatesNow, quitAndInstall } from '../services/updater'
+import { checkForUpdatesNow, quitAndInstall, getUpdateState } from '../services/updater'
 import { extractPage } from '../ai/extract'
 import type { TabManager } from '../browser/tabs'
 import type { DownloadManager } from '../browser/downloads'
@@ -207,6 +207,7 @@ export function registerIpc(ctx: IpcContext) {
   handle('news:top', null, () => topStories())
 
   // ---- app auto-update ----
+  handle('update:get', null, () => getUpdateState())
   handle('update:check', null, () => checkForUpdatesNow())
   handle('update:install', null, () => quitAndInstall())
 
