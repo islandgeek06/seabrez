@@ -2,6 +2,7 @@ import { BrowserWindow, session, shell, type WebContents } from 'electron'
 import { TabManager } from './tabs'
 import { DownloadManager } from './downloads'
 import { installPermissionHandlers } from '../security/permissions'
+import { installContextMenu } from './context-menu'
 import { getSettings } from '../services/settings'
 import { logger, diag } from '../services/logger'
 
@@ -84,6 +85,10 @@ export class WindowManager {
     const tabs = new TabManager(win, emit, { defaultPrivate: isPrivate, privatePartition })
     const entry: AppWindow = { id: win.id, win, tabs, isPrivate }
     this.windows.set(win.id, entry)
+
+    // Right-click copy/paste/select-all in the app UI's own inputs (omnibox,
+    // notes editor, AI chat, search fields).
+    installContextMenu(win.webContents)
 
     // Diagnostics: prove whether the preload actually loaded and exposed the API.
     win.webContents.on('preload-error', (_e, preloadPath, error) =>

@@ -1,5 +1,6 @@
 import { WebContentsView, type BrowserWindow, type Rectangle } from 'electron'
 import { history, sessionTabs } from '../db/database'
+import { installContextMenu } from './context-menu'
 
 export interface TabManagerOptions {
   /** New tabs default to private (used by private windows). */
@@ -188,6 +189,13 @@ export class TabManager {
     wc.setWindowOpenHandler(({ url }) => {
       this.createTab({ url, background: true, isPrivate: tab.isPrivate, workspaceId: tab.workspaceId })
       return { action: 'deny' }
+    })
+    // Right-click context menu (copy/paste/cut/select-all, link & image actions,
+    // navigation, inspect) — like a real browser.
+    installContextMenu(wc, {
+      isPage: true,
+      openInNewTab: (url) =>
+        this.createTab({ url, background: true, isPrivate: tab.isPrivate, workspaceId: tab.workspaceId }),
     })
     // Browser-level keyboard shortcuts must work even while the web page has
     // focus (the page is a separate WebContentsView, so the app renderer never
