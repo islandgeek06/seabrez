@@ -2515,3 +2515,45 @@ kbd {
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+/* Sidebar software-update indicator (v0.3.5) */
+.sidebar-update {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  color: var(--text-dim);
+  display: grid;
+  place-items: center;
+  transition: var(--transition);
+}
+.sidebar-update:hover {
+  background: var(--surface);
+  color: var(--text);
+}
+.sidebar-update.ready {
+  color: #22c55e;
+}
+.sidebar-update.ready:hover {
+  background: color-mix(in srgb, #22c55e 14%, transparent);
+}
+.sidebar-update-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 2px solid var(--bg-elev);
+}
+.sidebar-update.downloading .sidebar-update-dot {
+  background: #f59e0b;
+}
+.sidebar-update.ready .sidebar-update-dot {
+  background: #22c55e;
+  animation: update-pulse 1.8s ease-in-out infinite;
+}
+@keyframes update-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, #22c55e 60%, transparent); }
+  50% { box-shadow: 0 0 0 5px color-mix(in srgb, #22c55e 0%, transparent); }
+}

@@ -4,6 +4,7 @@ import {
   History,
   StickyNote,
   Download,
+  DownloadCloud,
   Settings as SettingsIcon,
   Sparkles,
 } from 'lucide-react'
@@ -27,6 +28,9 @@ export function Sidebar() {
   const activeWs = useStore((s) => s.activeWorkspaceId)
   const setWorkspace = useStore((s) => s.setWorkspace)
   const toggleAssistant = useStore((s) => s.toggleAssistant)
+  const update = useStore((s) => s.update)
+  const installUpdate = useStore((s) => s.installUpdate)
+  const showUpdate = update.status === 'available' || update.status === 'downloaded'
 
   return (
     <nav className="sidebar" aria-label="Primary">
@@ -75,6 +79,22 @@ export function Sidebar() {
           +
         </button>
       </div>
+
+      {showUpdate && (
+        <button
+          className={`sidebar-update ${update.status === 'downloaded' ? 'ready' : 'downloading'}`}
+          title={
+            update.status === 'downloaded'
+              ? `Update ${update.version ? `v${update.version} ` : ''}ready — click to restart & install`
+              : `Downloading update${update.percent ? ` ${update.percent}%` : ''}…`
+          }
+          aria-label={update.status === 'downloaded' ? 'Update ready to install' : 'Downloading update'}
+          onClick={() => (update.status === 'downloaded' ? installUpdate() : setSurface('settings'))}
+        >
+          {update.status === 'downloaded' ? <DownloadCloud size={19} /> : <Download size={19} />}
+          <span className="sidebar-update-dot" />
+        </button>
+      )}
 
       <button
         className={`sidebar-btn ${surface === 'settings' ? 'active' : ''}`}
