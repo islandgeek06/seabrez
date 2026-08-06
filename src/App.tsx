@@ -39,32 +39,32 @@ export default function App() {
     root.dataset.dyslexia = String(settings.dyslexiaFont)
   }, [ready, settings.theme, settings.accent, settings.reduceMotion, settings.dyslexiaFont])
 
-  // Global keyboard shortcuts.
+  // Global keyboard shortcuts. Keys pressed while the app UI has focus are
+  // handled here; keys pressed while a web page has focus are intercepted in the
+  // main process and forwarded over the 'shortcut' channel — both run the same
+  // action map so every shortcut works regardless of what's focused.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      const s = useStore.getState()
       const mod = e.ctrlKey || e.metaKey
       const key = e.key.toLowerCase()
-      if (mod && e.shiftKey && key === 'p') return act(e, () => s.setPalette(true))
-      if (mod && e.shiftKey && key === 'a') return act(e, () => s.toggleAssistant())
-      if (mod && e.shiftKey && key === 't') return act(e, () => api.tabs.restoreClosed())
-      if (mod && e.shiftKey && key === 'n') return act(e, () => api.window.newPrivate())
-      if (mod && key === 'l') return act(e, focusOmnibox)
-      if (mod && key === 't') return act(e, () => s.newTab())
-      if (mod && key === 'w') return act(e, () => s.activeTabId != null && s.closeTab(s.activeTabId))
-      if (mod && key === 'd') return act(e, () => void s.toggleBookmarkCurrent())
-      if (mod && key === 'h') return act(e, () => s.setSurface('history'))
-      if (mod && key === 'j') return act(e, () => s.setSurface('downloads'))
-      if (mod && key === 'f') return act(e, () => s.openFind())
-      if (mod && key === 'n') return act(e, () => api.window.newWindow())
-      if (mod && key === 'tab') return act(e, () => cycleTab(e.shiftKey))
       if (e.key === 'Escape') {
+        const s = useStore.getState()
         if (s.paletteOpen) s.setPalette(false)
         else if (s.find.open) s.closeFind()
+        return
+      }
+      const action = keyToAction(mod, e.shiftKey, key)
+      if (action) {
+        e.preventDefault()
+        runShortcut(action)
       }
     }
     window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    const offShortcut = api.on('shortcut', (p) => runShortcut((p as { action: string }).action))
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      offShortcut()
+    }
   }, [])
 
   if (!ready) {
@@ -110,9 +110,43 @@ export default function App() {
   )
 }
 
-function act(e: KeyboardEvent, fn: () => void) {
-  e.preventDefault()
-  fn()
+// Keep this in sync with shortcutAction() in electron/browser/tabs.ts.
+function keyToAction(mod: boolean, shift: boolean, key: string): string | null {
+  if (mod && shift && key === 'p') return 'palette'
+  if (mod && shift && key === 'a') return 'assistant'
+  if (mod && shift && key === 't') return 'restoreTab'
+  if (mod && shift && key === 'n') return 'newPrivate'
+  if (mod && shift && key === 'tab') return 'cycleTabBack'
+  if (mod && key === 'tab') return 'cycleTab'
+  if (mod && key === 'l') return 'omnibox'
+  if (mod && key === 't') return 'newTab'
+  if (mod && key === 'w') return 'closeTab'
+  if (mod && key === 'd') return 'bookmark'
+  if (mod && key === 'h') return 'history'
+  if (mod && key === 'j') return 'downloads'
+  if (mod && key === 'f') return 'find'
+  if (mod && key === 'n') return 'newWindow'
+  return null
+}
+
+function runShortcut(action: string) {
+  const s = useStore.getState()
+  switch (action) {
+    case 'palette': return s.setPalette(true)
+    case 'assistant': return s.toggleAssistant()
+    case 'restoreTab': return void api.tabs.restoreClosed()
+    case 'newPrivate': return void api.window.newPrivate()
+    case 'omnibox': return focusOmnibox()
+    case 'newTab': return s.newTab()
+    case 'closeTab': return void (s.activeTabId != null && s.closeTab(s.activeTabId))
+    case 'bookmark': return void s.toggleBookmarkCurrent()
+    case 'history': return s.setSurface('history')
+    case 'downloads': return s.setSurface('downloads')
+    case 'find': return s.openFind()
+    case 'newWindow': return void api.window.newWindow()
+    case 'cycleTab': return cycleTab(false)
+    case 'cycleTabBack': return cycleTab(true)
+  }
 }
 function focusOmnibox() {
   const el = document.getElementById('omnibox') as HTMLInputElement | null

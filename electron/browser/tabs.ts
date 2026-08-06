@@ -28,6 +28,26 @@ interface Tab extends TabState {
 
 type Emit = (channel: string, payload: unknown) => void
 
+// Map a keyboard chord to an app-UI action name forwarded to the renderer.
+// Shift variants MUST be checked before their non-shift counterparts.
+function shortcutAction(mod: boolean, shift: boolean, key: string): string | null {
+  if (mod && shift && key === 'p') return 'palette'
+  if (mod && shift && key === 'a') return 'assistant'
+  if (mod && shift && key === 't') return 'restoreTab'
+  if (mod && shift && key === 'n') return 'newPrivate'
+  if (mod && shift && key === 'tab') return 'cycleTabBack'
+  if (mod && key === 'tab') return 'cycleTab'
+  if (mod && key === 'l') return 'omnibox'
+  if (mod && key === 't') return 'newTab'
+  if (mod && key === 'w') return 'closeTab'
+  if (mod && key === 'd') return 'bookmark'
+  if (mod && key === 'h') return 'history'
+  if (mod && key === 'j') return 'downloads'
+  if (mod && key === 'f') return 'find'
+  if (mod && key === 'n') return 'newWindow'
+  return null
+}
+
 export class TabManager {
   private win: BrowserWindow
   private emit: Emit
@@ -169,6 +189,57 @@ export class TabManager {
       this.createTab({ url, background: true, isPrivate: tab.isPrivate, workspaceId: tab.workspaceId })
       return { action: 'deny' }
     })
+    // Browser-level keyboard shortcuts must work even while the web page has
+    // focus (the page is a separate WebContentsView, so the app renderer never
+    // sees these keys). Intercept them here and either act on the page directly
+    // (DevTools, reload, back/forward) or forward to the app UI.
+    wc.on('before-input-event', (event, input) => {
+      if (input.type !== 'keyDown') return
+      const mod = input.control || input.meta
+      const shift = input.shift
+      const alt = input.alt
+      const key = (input.key || '').toLowerCase()
+
+      // DevTools for the current page (F12 or Ctrl/Cmd+Shift+I).
+      if (key === 'f12' || (mod && shift && key === 'i')) {
+        event.preventDefault()
+        this.toggleDevToolsFor(tab.id)
+        return
+      }
+      // Page navigation, handled directly on the tab.
+      if ((mod && key === 'r') || key === 'f5') {
+        event.preventDefault()
+        wc.reload()
+        return
+      }
+      if (alt && key === 'arrowleft') {
+        event.preventDefault()
+        if (wc.navigationHistory.canGoBack()) wc.navigationHistory.goBack()
+        return
+      }
+      if (alt && key === 'arrowright') {
+        event.preventDefault()
+        if (wc.navigationHistory.canGoForward()) wc.navigationHistory.goForward()
+        return
+      }
+      // Everything else the app UI owns — forward it to the renderer.
+      const action = shortcutAction(mod, shift, key)
+      if (action) {
+        event.preventDefault()
+        this.emit('shortcut', { action })
+      }
+    })
+  }
+
+  toggleDevToolsFor(id: number) {
+    const wc = this.webContentsFor(id)
+    if (!wc) return
+    if (wc.isDevToolsOpened()) wc.closeDevTools()
+    else wc.openDevTools({ mode: 'detach' })
+  }
+
+  toggleDevTools() {
+    if (this.activeId != null) this.toggleDevToolsFor(this.activeId)
   }
 
   private recordHistory(tab: Tab) {

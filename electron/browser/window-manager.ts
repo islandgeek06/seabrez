@@ -110,6 +110,18 @@ export class WindowManager {
       emit('app:ready', { settings, isPrivate })
     })
 
+    // F12 / Ctrl+Shift+I while the app UI (not a page) has focus → open the
+    // active tab's page DevTools, like a normal browser.
+    win.webContents.on('before-input-event', (event, input) => {
+      if (input.type !== 'keyDown') return
+      const mod = input.control || input.meta
+      const key = (input.key || '').toLowerCase()
+      if (key === 'f12' || (mod && input.shift && key === 'i')) {
+        event.preventDefault()
+        tabs.toggleDevTools()
+      }
+    })
+
     // Lock the app-UI renderer: no navigation away, no popups.
     win.webContents.on('will-navigate', (e, url) => {
       if (url !== win.webContents.getURL()) e.preventDefault()
