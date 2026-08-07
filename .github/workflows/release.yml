@@ -1,8 +1,8 @@
 name: Release
 
 # Push a version tag (e.g. v0.1.0) and GitHub builds the Windows installer and
-# publishes it to a GitHub Release that anyone can download. Runs on GitHub's
-# Windows runners, which build cleanly (no local Developer Mode needed).
+# the macOS .dmg, publishing both to a GitHub Release that anyone can download.
+# Runs on GitHub's Windows and macOS runners (no local setup needed).
 
 on:
   push:
@@ -56,5 +56,48 @@ jobs:
             -H "x-upsert: true" \
             -H "Content-Type: application/octet-stream" \
             --data-binary @"release/SeaBrez-Setup.exe")
+          echo "HTTP $code"; cat resp.txt; echo
+          test "$code" = "200"
+
+  build-mac:
+    runs-on: macos-latest
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build renderer + main
+        run: npm run build
+
+      # Universal (Intel + Apple Silicon) .dmg. Unsigned: auto-discovery of a
+      # signing identity is disabled so the build succeeds without an Apple
+      # Developer certificate.
+      - name: Package & publish macOS dmg
+        run: npx electron-builder --mac --publish always
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+
+      # Upload the dmg to the Supabase 'download' bucket for the website link.
+      - name: Upload dmg to Supabase Storage
+        if: ${{ env.SUPABASE_URL != '' }}
+        shell: bash
+        run: |
+          code=$(curl -sS -o resp.txt -w "%{http_code}" -X POST \
+            "$SUPABASE_URL/storage/v1/object/download/SeaBrez.dmg" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "x-upsert: true" \
+            -H "Content-Type: application/octet-stream" \
+            --data-binary @"release/SeaBrez.dmg")
           echo "HTTP $code"; cat resp.txt; echo
           test "$code" = "200"
