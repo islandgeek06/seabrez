@@ -61,9 +61,6 @@ jobs:
 
   build-mac:
     runs-on: macos-latest
-    env:
-      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
     steps:
       - uses: actions/checkout@v4
 
@@ -81,23 +78,11 @@ jobs:
       # Universal (Intel + Apple Silicon) .dmg. Unsigned: auto-discovery of a
       # signing identity is disabled so the build succeeds without an Apple
       # Developer certificate.
+      # The universal .dmg is served from the public GitHub Release (no upload
+      # size limit, unlike the Supabase bucket used for the Windows installer).
+      # The website's macOS button links to the release's latest download URL.
       - name: Package & publish macOS dmg
         run: npx electron-builder --mac --publish always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CSC_IDENTITY_AUTO_DISCOVERY: false
-
-      # Upload the dmg to the Supabase 'download' bucket for the website link.
-      - name: Upload dmg to Supabase Storage
-        if: ${{ env.SUPABASE_URL != '' }}
-        shell: bash
-        run: |
-          code=$(curl -sS -o resp.txt -w "%{http_code}" -X POST \
-            "$SUPABASE_URL/storage/v1/object/download/SeaBrez.dmg" \
-            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
-            -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
-            -H "x-upsert: true" \
-            -H "Content-Type: application/octet-stream" \
-            --data-binary @"release/SeaBrez.dmg")
-          echo "HTTP $code"; cat resp.txt; echo
-          test "$code" = "200"
